@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(gnome-outliner, 0.1)
+AC_INIT(gnome-outliner, 0.1cvs)
 AC_CONFIG_SRCDIR(src/outliner-main.c)
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
@@ -12,7 +12,7 @@ AC_PROG_INTLTOOL
 AC_PROG_LIBTOOL
 AC_PROG_LN_S
 
-PKG_CHECK_MODULES(DEPS, glib-2.0 >= 2.4.0 gtk+-2.0 >= 2.4.0 libxml-2.0 >= 2.6.8 libglade-2.0 >= 2.3.0 libgnome-2.0 >= 2.6.0 libgnomeui-2.0 >= 2.6.0)
+PKG_CHECK_MODULES(DEPS, glib-2.0 >= 2.4.0 gtk+-2.0 >= 2.4.0 libxml-2.0 >= 2.6.8 libgnome-2.0 >= 2.6.0 libgnomeui-2.0 >= 2.6.0)
 AC_SUBST(DEPS_CFLAGS)
 AC_SUBST(DEPS_LIBS)
 

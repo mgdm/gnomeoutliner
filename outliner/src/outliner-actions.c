@@ -200,7 +200,7 @@ outliner_action_about (GtkAction *action, OutlinerWindow *window)
 
   const gchar *authors[] = {
     "Steven Garrity <steven@silverorange.com>",
-    "Dan Korostelev <dan@atl.energo.ru>",
+    "Dan Korostelev <dan@ats.energo.ru>",
     "Nathan Fredrickson <nathan@silverorange.com>",
     NULL
   };

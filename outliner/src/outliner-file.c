@@ -78,21 +78,39 @@ outliner_file_save(OutlinerWindow *window, OutlinerDocument *doc)
     outliner_file_save_as(window, doc);
 }
 
-void
+gint
 outliner_file_save_changed(OutlinerWindow *window, OutlinerDocument *doc) 
 {
-  GtkWidget *save_file_question;
+  GtkWidget *save_file_dialog;
+  gint response;
 
-  if (outliner_document_get_changed(doc) == FALSE)
-    return;
+  if (outliner_document_get_changed(doc) == TRUE)
+    {
+   
+      save_file_dialog = gtk_message_dialog_new_with_markup (GTK_WINDOW(window),
+						 GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+						 GTK_MESSAGE_WARNING,
+						 GTK_BUTTONS_NONE,
+						 _("<span weight=\"bold\"size=\"larger\">Save changes to document \"%s\"  before closing it?</span>\n\nIf you close without saving, the changes  will be discarded"), outliner_document_get_title(doc)->str);
+      gtk_dialog_add_buttons(GTK_DIALOG(save_file_dialog),
+			     _("Close without Saving"), GTK_RESPONSE_NO,
+			     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			     GTK_STOCK_SAVE, GTK_RESPONSE_YES,
+			     NULL);
+      gtk_dialog_set_default_response(GTK_DIALOG (save_file_dialog), GTK_RESPONSE_YES);
+      gtk_window_set_resizable   (GTK_WINDOW(save_file_dialog), FALSE);
+       
+      response = gtk_dialog_run(GTK_DIALOG(save_file_dialog));
+      if ( response == GTK_RESPONSE_YES)
+	outliner_file_save(window, doc);
+  
+      gtk_widget_destroy(save_file_dialog);
+    }
+  else
+    response = GTK_RESPONSE_OK;
 
-  save_file_question = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, _("File changed, save file?"));
-  gtk_dialog_set_default_response(GTK_DIALOG (save_file_question), GTK_RESPONSE_YES);
-  if (gtk_dialog_run(GTK_DIALOG(save_file_question)) == GTK_RESPONSE_YES)
-    outliner_file_save(window, doc);
 
-  gtk_widget_destroy(save_file_question);
-
+  return response;
 }
 
 

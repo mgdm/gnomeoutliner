@@ -54,10 +54,11 @@ outliner_action_new (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  outliner_file_save_changed(window, doc);
-
-  gtk_tree_store_clear(GTK_TREE_STORE (doc));
-  outliner_view_add_item(view);
+  if (outliner_file_save_changed(window, doc) != GTK_RESPONSE_CANCEL)
+    {
+      gtk_tree_store_clear(GTK_TREE_STORE (doc));
+      outliner_view_add_item(view);
+    }
 }
 
 void
@@ -69,9 +70,10 @@ outliner_action_open (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  outliner_file_save_changed(window, doc);
-
-  outliner_file_open(window, doc);
+  if (outliner_file_save_changed(window, doc) != GTK_RESPONSE_CANCEL)
+    {
+      outliner_file_open(window, doc);
+    }
 }
 
 void
@@ -83,8 +85,10 @@ outliner_action_open_location (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  outliner_file_save_changed(window, doc);
-  /* TODO: open doc from location */
+  if (outliner_file_save_changed(window, doc) != GTK_RESPONSE_CANCEL)
+    {
+      ;/* TODO: open doc from location */
+    }
 }
 
 void
@@ -144,9 +148,11 @@ outliner_action_quit (GtkAction *action, OutlinerWindow *window)
 
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view); 
-  outliner_file_save_changed(window, doc);
-  gtk_main_quit();
 
+  if (outliner_file_save_changed(window, doc) != GTK_RESPONSE_CANCEL)
+    {
+      gtk_main_quit();
+    }
 }
 
 

@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 #  -*- Python -*-
 
 """Complicated notification for CVS checkins.
@@ -77,16 +77,12 @@ DIFF_TRUNCATE_IF_LARGER = 1000
 
 PROGRAM = sys.argv[0]
 
-
-
 def usage(code, msg=''):
     print __doc__ % globals()
     if msg:
         print msg
     sys.exit(code)
 
-
-
 def calculate_diff(filespec, contextlines):
     try:
         file, oldrev, newrev = string.split(filespec, ',')
@@ -131,7 +127,6 @@ def calculate_diff(filespec, contextlines):
     return string.join(lines, '')
 
 
-
 def blast_mail(mailcmd, filestodiff, contextlines):
     # cannot wait for child process or that will cause parent to retain cvs
     # lock for too long.  Urg!
@@ -151,7 +146,6 @@ def blast_mail(mailcmd, filestodiff, contextlines):
         os._exit(0)
 
 
-
 # scan args for options
 def main():
     contextlines = 0
@@ -212,7 +206,6 @@ def main():
     print 'Generating notification message... done.'
 
 
-
 if __name__ == '__main__':
     main()
     sys.exit(0)

@@ -1,0 +1,28 @@
+bin_PROGRAMS = gnome-outliner
+
+gnome_outliner_SOURCES = \
+    outliner-window.c \
+    outliner-window.h \
+    outliner-actions.c \
+    outliner-actions.h \
+    outliner-view.c \
+    outliner-view.h \
+    outliner-document.c \
+    outliner-document.h \
+    outliner-file.c \
+    outliner-file.h \
+    outliner-opml.c \
+    outliner-opml.h \
+    xml-gnomevfs.c \
+    xml-gnomevfs.h \
+    outliner-cell-renderer.c \
+    outliner-cell-renderer.h \
+    outliner-text-view.c \
+    outliner-text-view.h \
+    outliner-main.c
+
+gnome_outliner_LDADD = $(DEPS_LIBS)
+
+AM_CPPFLAGS = $(DEPS_CFLAGS) \
+              -DPACKAGE_LOCALE_DIR=\""$(datadir)/locale"\" \
+              -DPACKAGE_DATA_DIR=\""$(pkgdatadir)/"\"

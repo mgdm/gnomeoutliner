@@ -101,6 +101,7 @@ void
 outliner_file_open(OutlinerWindow *window, OutlinerDocument *doc) 
 {
   GtkWidget *dialog;
+  GdkScreen *screen;
   gint w, h;	/* width, height */
 
   dialog = gtk_file_chooser_dialog_new(_("Open file"), GTK_WINDOW (window), 
@@ -111,6 +112,13 @@ outliner_file_open(OutlinerWindow *window, OutlinerDocument *doc)
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
     outliner_opml_load_file(doc, gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog)));
+
+  /* We shouldn't resize a window larger than the screen size */
+    screen = gtk_window_get_screen(GTK_WINDOW(window));
+    if (doc->w_right > gdk_screen_get_width(screen))
+        doc->w_right = gdk_screen_get_width(screen) - 10;
+    if (doc->w_bottom > gdk_screen_get_height(screen))
+        doc->w_bottom = gdk_screen_get_height(screen) - 10;
 
     w = doc->w_right - doc->w_left;
     h = doc->w_bottom - doc->w_top;

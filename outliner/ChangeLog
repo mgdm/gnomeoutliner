@@ -1,4 +1,9 @@
 version 0.1cvs:
+	* More support for the OPML head elements and non-destructive with 
+	  any non-supported attributes in an existing file (David Maddock)
+	* Item checkboxes (David Maddock)
+	* Delete key deletes selected row(s) (David Maddock)
+	* Drag and drop into the outline (David Maddock)
 	* "Save Changes" confirmation (Javier Amor García)
 	* Multiple select and multiple row operations
 	* Item actions (move up/down, indent/unindent, delete) now operate on

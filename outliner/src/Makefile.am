@@ -37,7 +37,7 @@ outliner-marshal.h: outliner-marshal.list
 	@GLIB_GENMARSHAL@ $(GENMARSHAL_FLAGS) \
 		--header outliner-marshal.list > outliner-marshal.h
 
-outliner-marshal.c: outliner-marshal.list
+outliner-marshal.c: outliner-marshal.h
 	@GLIB_GENMARSHAL@ $(GENMARSHAL_FLAGS) \
 		--body outliner-marshal.list > outliner-marshal.c
 

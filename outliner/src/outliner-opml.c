@@ -113,6 +113,8 @@ outliner_opml_save_file(OutlinerDocument *doc, gchar *filename)
     outliner->file->uri = filename;
     outliner_mainwindow_set_title();
     */
+
+    doc->changed= FALSE;
   }
 }
 
@@ -200,5 +202,6 @@ outliner_opml_load_file(OutlinerDocument *doc, gchar *filename)
   outliner->file->uri = filename;
   outliner_mainwindow_set_title();	
   */
+  doc->changed = FALSE;
 }
 

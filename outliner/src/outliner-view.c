@@ -82,6 +82,8 @@ outliner_view_add_item (OutlinerView *view)
   gtk_tree_view_set_cursor_on_cell(GTK_TREE_VIEW (view), path,
       gtk_tree_view_get_column(GTK_TREE_VIEW (view), 0), NULL, TRUE);
   gtk_tree_path_free(path);
+
+   doc->changed = TRUE;
 }
 
 void
@@ -119,8 +121,6 @@ outliner_view_foreach_selected_subtree (OutlinerView *view, OutlinerViewForeachF
   }
   g_list_foreach(reflist, (GFunc)gtk_tree_row_reference_free, NULL);
   g_list_free(reflist);
-
-
 }
 
 gboolean
@@ -259,6 +259,7 @@ outliner_view_new (OutlinerDocument *doc)
 
   priv->sel = gtk_tree_view_get_selection(tree);
   gtk_tree_selection_set_mode(priv->sel, GTK_SELECTION_MULTIPLE);
+
   return GTK_WIDGET (view);
 }
 

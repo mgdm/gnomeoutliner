@@ -113,6 +113,8 @@ outliner_document_indent (OutlinerDocument *doc, GtkTreePath *path, gpointer dat
   gtk_tree_model_get_iter(model, &prev, path);
 
   move_subtree (store, &cur, &prev, NULL);
+
+  doc->changed=TRUE;
 }
 
 void
@@ -131,6 +133,8 @@ outliner_document_unindent (OutlinerDocument *doc, GtkTreePath *path, gpointer d
     move_subtree (store, &cur, &grandparent, &parent);
   else
     move_subtree (store, &cur, NULL, &parent);
+
+  doc->changed=TRUE;
 }
 
 void
@@ -148,6 +152,8 @@ outliner_document_move_up (OutlinerDocument *doc, GtkTreePath *path, gpointer da
 
   /* this will fail on top-level items: waiting on gnome bug #139785 */
   gtk_tree_store_swap(store, &cur, &prev);
+
+  doc->changed=TRUE;
 }
 
 void
@@ -164,6 +170,8 @@ outliner_document_move_down (OutlinerDocument *doc, GtkTreePath *path, gpointer 
 
   /* this will fail on top-level items: waiting on gnome bug #139785 */
   gtk_tree_store_swap(store, &cur, &next);
+
+  doc->changed=TRUE;
 }
 
 void
@@ -176,6 +184,8 @@ outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointe
 
   gtk_tree_model_get_iter(model, &cur, path);
   gtk_tree_store_remove(store, &cur);
+
+  doc->changed=TRUE;
 }
 
 /*-------------*/
@@ -184,7 +194,7 @@ static void
 outliner_document_init (OutlinerDocument *doc)
 {
   //OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE (doc);
-
+  doc->changed = FALSE;
 }
 
 static void

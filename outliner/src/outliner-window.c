@@ -85,7 +85,7 @@ static GtkActionEntry action_entries[] = {
     N_("Show the properties of this outline"), G_CALLBACK (outliner_action_dummy) },
 
   { "QuitAction", GTK_STOCK_QUIT, NULL, NULL,
-    N_("Quit Gnome Outliner"), gtk_main_quit },
+    N_("Quit Gnome Outliner"), G_CALLBACK(outliner_action_quit) },
 
   /* Edit Menu */
   { "UndoAction", GTK_STOCK_UNDO, NULL, "<ctrl>Z",
@@ -296,6 +296,15 @@ key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
   return FALSE;
 }
 
+static gboolean
+on_delete(GtkWidget *widget, gpointer data)
+{
+  OutlinerWindow *window = (OutlinerWindow*) widget;
+  outliner_action_quit(NULL, window);
+
+}
+
+
 static void
 outliner_window_init (OutlinerWindow *window)
 {
@@ -366,6 +375,7 @@ outliner_window_init (OutlinerWindow *window)
 
   g_signal_connect(G_OBJECT (priv->view), "key_press_event",
                    G_CALLBACK(key_press_cb), window);
+  g_signal_connect(G_OBJECT (window), "delete_event", G_CALLBACK(on_delete), NULL);
 }
 
 static void

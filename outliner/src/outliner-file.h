@@ -29,6 +29,7 @@
 
 void outliner_file_save_as(OutlinerWindow *window, OutlinerDocument *doc);
 void outliner_file_save(OutlinerWindow *window, OutlinerDocument *doc);
+void outliner_file_save_changed(OutlinerWindow *window, OutlinerDocument *doc);
 void outliner_file_open(OutlinerWindow *window, OutlinerDocument *doc);
 
 #endif

@@ -79,6 +79,25 @@ outliner_file_save(OutlinerWindow *window, OutlinerDocument *doc)
     outliner_file_save_as(window, doc);
 }
 
+void
+outliner_file_save_changed(OutlinerWindow *window, OutlinerDocument *doc) 
+{
+  GtkWidget *save_file_question;
+
+  if (doc->changed == FALSE)
+    return;
+
+  save_file_question = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, _("File changed, save file?"));
+  gtk_dialog_set_default_response(GTK_DIALOG (save_file_question), GTK_RESPONSE_YES);
+  if (gtk_dialog_run(GTK_DIALOG(save_file_question)) == GTK_RESPONSE_YES)
+    outliner_file_save(window, doc);
+
+  gtk_widget_destroy(save_file_question);
+
+}
+
+
+
 void 
 outliner_file_open(OutlinerWindow *window, OutlinerDocument *doc) 
 {

@@ -35,6 +35,7 @@ typedef struct _OutlinerDocumentClass OutlinerDocumentClass;
 
 struct _OutlinerDocument {
   GtkTreeStore parent;
+  gboolean changed;
 };
 
 struct _OutlinerDocumentClass {

@@ -1,4 +1,5 @@
 version 0.1cvs:
+	* "Save Changes" confirmation (Javier Amor García)
 	* Multiple select and multiple row operations
 	* Item actions (move up/down, indent/unindent, delete) now operate on
 	  on subtrees

@@ -239,7 +239,7 @@ expand (OutlinerView *view)
 static void
 outliner_view_init (OutlinerView *view)
 {
-
+  gtk_tree_view_set_reorderable (view, TRUE);
 }
 
 static void

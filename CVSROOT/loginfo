@@ -30,5 +30,5 @@
 #DEFAULT /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} gnomeoutliner-commits@lists.sourceforge.net
 #CVSROOT $CVSROOT/CVSROOT/syncmail %{sVv} noif@users.sourceforge.net
 #DEFAULT $CVSROOT/CVSROOT/syncmail %{sVv} gnomeoutliner-commits@lists.sourceforge.net
-gnome-outliner $CVSROOT/CVSROOT/syncmail %{sVv} nathan@silverorange.com
+gnome-outliner /cvsroot/gaim/CVSROOT/syncmail %{sVv} nathan@silverorange.com
 outliner /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} gnomeoutliner-commits@lists.sourceforge.net

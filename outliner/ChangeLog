@@ -1,4 +1,7 @@
-version 0.1cvs:
+version 0.2cvs:
+	* Command line options.
+
+version 0.1:
 	* More support for the OPML head elements and non-destructive with 
 	  any non-supported attributes in an existing file (David Maddock)
 	* Item checkboxes (David Maddock)

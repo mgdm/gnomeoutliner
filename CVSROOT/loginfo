@@ -27,6 +27,6 @@
 #DEFAULT (echo ""; id; echo %{sVv}; date; cat) >> $CVSROOT/CVSROOT/commitlog
 #
 CVSROOT /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} noif@users.sourceforge.net
-DEFAULT /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} gnomeoutliner-commits@lists.sourceforge.net
+#DEFAULT /cvsroot/sitedocs/CVSROOT/cvstools/syncmail %{sVv} gnomeoutliner-commits@lists.sourceforge.net
 #CVSROOT $CVSROOT/CVSROOT/syncmail %{sVv} noif@users.sourceforge.net
 #DEFAULT $CVSROOT/CVSROOT/syncmail %{sVv} gnomeoutliner-commits@lists.sourceforge.net

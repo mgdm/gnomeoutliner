@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(gnome-outliner, 0.1.0)
+AC_INIT(gnome-outliner, 0.1)
 AC_CONFIG_SRCDIR(src/outliner-main.c)
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
@@ -22,6 +22,8 @@ AM_GLIB_GNU_GETTEXT
 GETTEXT_PACKAGE=$PACKAGE_NAME
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED([GETTEXT_PACKAGE], ["${GETTEXT_PACKAGE}"], [gettext domain])
+
+AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
 
 AC_CONFIG_FILES([Makefile src/Makefile po/Makefile.in])
 AC_OUTPUT

@@ -1,4 +1,8 @@
-version 0.1.0cvs:
+version 0.1cvs:
+	* Multiple select and multiple row operations
+	* Item actions (move up/down, indent/unindent, delete) now operate on
+	  on subtrees
+	* Setup keyboard accelerators and override default bindings for Tab
 	* Combined code from Dan Korostelev, Christian Neumair, and 
 	  myself (Nathan Fredrickson) to get us started in structured way
 	* Created Changelog File :) 

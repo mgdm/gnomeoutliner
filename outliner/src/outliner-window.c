@@ -33,6 +33,7 @@
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <libgnomeui/gnome-stock-icons.h>
+#include <gdk/gdkkeysyms.h>
 
 #define OUTLINER_WINDOW_GET_PRIVATE(obj) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((obj), OUTLINER_TYPE_WINDOW, OutlinerWindowPrivate))
@@ -45,7 +46,6 @@ struct _OutlinerWindowPrivate {
   GtkWidget *vbox;
   GtkWidget *sw;
   GtkWidget *view;
-  //OutlinerDocument *document;
   GtkWidget *statusbar;
 };
 
@@ -66,14 +66,14 @@ static GtkActionEntry action_entries[] = {
     N_("Create a new outline"), G_CALLBACK (outliner_action_new) },
   { "OpenAction", GTK_STOCK_OPEN, NULL, NULL,
     N_("Open an outline"), G_CALLBACK (outliner_action_open) },
-  { "OpenLocationAction", NULL, N_("Open _Location..."), "<control>L",
+  { "OpenLocationAction", NULL, N_("Open _Location..."), "<ctrl>L",
     N_("Open an outline at a specified location"), G_CALLBACK (outliner_action_open_location) },
 
   { "SaveAction", GTK_STOCK_SAVE, NULL, NULL,
     N_("Save this outline to current file"), G_CALLBACK (outliner_action_save) },
-  { "SaveAsAction", GTK_STOCK_SAVE_AS, NULL, "<shift><control>S",
+  { "SaveAsAction", GTK_STOCK_SAVE_AS, NULL, NULL,
     N_("Save this outline to a file"), G_CALLBACK (outliner_action_save_as) },
-  { "ExportAction", NULL, N_("E_xport"), NULL,
+  { "ExportAction", NULL, N_("E_xport"), "<ctrl>X",
     N_("Export this outline to another format"), G_CALLBACK (outliner_action_export) },
 
   { "PrintPreviewAction", GTK_STOCK_PRINT_PREVIEW, NULL, NULL,
@@ -95,31 +95,26 @@ static GtkActionEntry action_entries[] = {
   { "PasteAction", GTK_STOCK_PASTE, NULL, NULL,
     N_("Paste the clipboard contents"), G_CALLBACK (outliner_action_dummy) },
   { "DeleteAction", GTK_STOCK_DELETE, NULL, NULL,
-    N_("Delete selection"), G_CALLBACK (outliner_action_dummy) },
-  { "SelectAllAction", NULL, N_("Select _All"), NULL,
-    N_("Select entire outline"), G_CALLBACK (outliner_action_dummy) },
+    N_("Delete selection"), G_CALLBACK (outliner_action_delete_item) },
+  { "SelectAllAction", NULL, N_("Select _All"), "<ctrl>A",
+    N_("Select entire outline"), G_CALLBACK (outliner_action_select_all) },
 
   /* Outline Menu */
-  { "NewBeforeAction", GTK_STOCK_NEW, N_("_New Before"), "<control>Insert",
-    N_("Create a new node before the currently selected one"), G_CALLBACK (outliner_action_dummy) },
-  { "NewAfterAction", GTK_STOCK_NEW, N_("_New After"), "Insert",
-    N_("Create a new node after the currently selected one"), G_CALLBACK (outliner_action_dummy) },
-  { "NewChildAction", GTK_STOCK_NEW, N_("_New Child"), "<control><shift>Insert",
-    N_("Create a new node below the currently selected one"), G_CALLBACK (outliner_action_new_child) },
+  { "AddItemAction", GTK_STOCK_ADD, N_("_Add Item"), NULL,
+    N_("Add a new item"), G_CALLBACK (outliner_action_add_item) },
+  { "IndentAction", GTK_STOCK_GO_FORWARD, N_("_Indent"), "Tab",
+    N_("Indent the current selection"), G_CALLBACK (outliner_action_indent) },
+  { "UnindentAction", GTK_STOCK_GO_BACK, N_("_Unindent"), "<shift>Tab",
+    N_("Unindent the current selection"), G_CALLBACK (outliner_action_unindent) },
+  { "MoveUpAction", GTK_STOCK_GO_UP, N_("Move _Up"), "<alt>Up",
+    N_("Move the current selection up"), G_CALLBACK (outliner_action_move_up) },
+  { "MoveDownAction", GTK_STOCK_GO_DOWN, N_("Move _Down"), "<alt>Down",
+    N_("Move the current selection down"), G_CALLBACK (outliner_action_move_down) },
 
-  { "IndentAction", GTK_STOCK_GO_FORWARD, N_("_Indent"), "<control>Left",
-    N_("Indent the currently selected node in hierarchy"), G_CALLBACK (outliner_action_indent) },
-  { "UnindentAction", GTK_STOCK_GO_BACK, N_("_Unindent"), "<control>Right",
-    N_("Unindent the currently selected node in hierarchy"), G_CALLBACK (outliner_action_indent) },
-  { "MoveUpAction", GTK_STOCK_GO_UP, N_("Move _Up"), "<control>Up",
-    N_("Move the currently selected node up"), G_CALLBACK (outliner_action_dummy) },
-  { "MoveDownAction", GTK_STOCK_GO_DOWN, N_("Move _Down"), "<control>Down",
-    N_("Move the currently selected node down"), G_CALLBACK (outliner_action_dummy) },
-
-  { "ExpandAllAction", NULL, N_("Expand All"), NULL,
-    N_("Expand all nodes"), G_CALLBACK (outliner_action_dummy) },
-  { "CollapseAllAction", NULL, N_("Collapse All"), NULL,
-    N_("Collape all nodes"), G_CALLBACK (outliner_action_dummy) },
+  { "ExpandAllAction", NULL, N_("E_xpand All"), NULL,
+    N_("Expand all items"), G_CALLBACK (outliner_action_expand_all) },
+  { "CollapseAllAction", NULL, N_("_Collapse All"), NULL,
+    N_("Collapse all items"), G_CALLBACK (outliner_action_collapse_all) },
 
   /* Help Menu */
   { "AboutAction", GNOME_STOCK_ABOUT, NULL, NULL,
@@ -153,10 +148,7 @@ static const gchar *ui_info =
 "     <menuitem name=\"SelectAll\" action=\"SelectAllAction\"/>"
 "  </menu>"
 "  <menu name=\"Outline\" action=\"OutlineMenuAction\">"
-"     <menuitem name=\"NewBefore\" action=\"NewBeforeAction\"/>"
-"     <menuitem name=\"NewAfter\" action=\"NewAfterAction\"/>"
-"     <menuitem name=\"NewChild\" action=\"NewChildAction\"/>"
-"     <separator name=\"Sep1\"/>"
+"     <menuitem name=\"AddItem\" action=\"AddItemAction\"/>"
 "     <menuitem name=\"Indent\" action=\"IndentAction\"/>"
 "     <menuitem name=\"Unindent\" action=\"UnindentAction\"/>"
 "     <menuitem name=\"MoveUp\" action=\"MoveUpAction\"/>"
@@ -174,8 +166,8 @@ static const gchar *ui_info =
 "  <toolitem name=\"Open\" action=\"OpenAction\"/>"
 "  <toolitem name=\"Save\" action=\"SaveAction\"/>"
 "  <separator/>"
-"  <toolitem name=\"Indent\" action=\"IndentAction\"/>"
 "  <toolitem name=\"Unindent\" action=\"UnindentAction\"/>"
+"  <toolitem name=\"Indent\" action=\"IndentAction\"/>"
 "  <toolitem name=\"MoveUp\" action=\"MoveUpAction\"/>"
 "  <toolitem name=\"MoveDown\" action=\"MoveDownAction\"/>"
 "</toolbar>"
@@ -266,6 +258,30 @@ merge_add_widget (GtkUIManager *merge,
   gtk_widget_show (widget);
 }
 
+static gboolean
+key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+  OutlinerWindow *window = data;
+  OutlinerWindowPrivate *priv = OUTLINER_WINDOW_GET_PRIVATE (window);
+
+  /* intercept Tab */
+  if (event->keyval == GDK_Tab) {
+    outliner_action_indent(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/IndentAction"), window);
+    return TRUE;
+  }
+  /* intercept <shift>Tab */
+  else if ((event->keyval == GDK_ISO_Left_Tab) && (event->state & GDK_SHIFT_MASK)) {
+    outliner_action_unindent(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/UnindentAction"), window);
+    return TRUE;
+  }
+  /* intercept Return */
+  else if (event->keyval == GDK_Return) {
+    outliner_action_add_item(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/UnindentAction"), window);
+    return TRUE;
+  }
+  return FALSE;
+}
+
 static void
 outliner_window_init (OutlinerWindow *window)
 {
@@ -287,7 +303,6 @@ outliner_window_init (OutlinerWindow *window)
   gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(priv->sw),
                                       GTK_SHADOW_IN);
 
-  //priv->document = outliner_document_new ();
   priv->view = outliner_view_new (outliner_document_new ());
   gtk_container_add (GTK_CONTAINER (priv->sw), priv->view);
   gtk_box_pack_end (GTK_BOX (priv->vbox), priv->sw, TRUE, TRUE, 0);
@@ -324,10 +339,19 @@ outliner_window_init (OutlinerWindow *window)
   }
   */
 
-  gtk_window_set_title (GTK_WINDOW (window), _("Gnome Outliner"));
-  gtk_window_set_default_size (GTK_WINDOW(window), 600, 400);
+  gtk_window_add_accel_group(GTK_WINDOW (window), 
+      gtk_ui_manager_get_accel_group(priv->merge));
 
-  outliner_view_add_item(OUTLINER_VIEW (priv->view), FALSE);
+  gtk_ui_manager_ensure_update(priv->merge);
+
+  gtk_window_set_title(GTK_WINDOW (window), _("Gnome Outliner"));
+  gtk_window_set_default_size(GTK_WINDOW(window), 600, 400);
+
+  gtk_widget_show(GTK_WIDGET(window));
+  outliner_view_add_item(OUTLINER_VIEW(priv->view));
+
+  g_signal_connect(G_OBJECT (priv->view), "key_press_event",
+                   G_CALLBACK(key_press_cb), window);
 }
 
 static void

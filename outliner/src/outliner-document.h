@@ -39,9 +39,17 @@ struct _OutlinerDocument {
 
 struct _OutlinerDocumentClass {
   GtkTreeStoreClass parent_class;
+
+  void (*row_moved) (OutlinerDocument *doc, GtkTreePath *oldpath, GtkTreePath *newpath);
 };
 
 GType             outliner_document_get_type (void);
 OutlinerDocument *outliner_document_new      (void);
+
+void outliner_document_indent      (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void outliner_document_unindent    (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void outliner_document_move_down   (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void outliner_document_move_up     (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
 
 #endif

@@ -30,17 +30,26 @@
 #include <libgnomeui/gnome-stock-icons.h>
 
 /* action callbacks */
-void outliner_action_about     (GtkAction *action, OutlinerWindow *window);
-void outliner_action_new_child (GtkAction *action, OutlinerWindow *window);
-void outliner_action_indent    (GtkAction *action, OutlinerWindow *window);
-
-void outliner_action_new       (GtkAction *action, OutlinerWindow *window);
-void outliner_action_open      (GtkAction *action, OutlinerWindow *window);
+void outliner_action_new          (GtkAction *action, OutlinerWindow *window);
+void outliner_action_open         (GtkAction *action, OutlinerWindow *window);
 void outliner_action_open_location (GtkAction *action, OutlinerWindow *window);
-void outliner_action_save      (GtkAction *action, OutlinerWindow *window);
-void outliner_action_save_as   (GtkAction *action, OutlinerWindow *window);
-void outliner_action_export    (GtkAction *action, OutlinerWindow *window);
+void outliner_action_save         (GtkAction *action, OutlinerWindow *window);
+void outliner_action_save_as      (GtkAction *action, OutlinerWindow *window);
+void outliner_action_export       (GtkAction *action, OutlinerWindow *window);
 
-void outliner_action_dummy     (GtkAction *action, OutlinerWindow *window);
+void outliner_action_delete_item  (GtkAction *action, OutlinerWindow *window);
+void outliner_action_select_all   (GtkAction *action, OutlinerWindow *window);
+
+void outliner_action_add_item     (GtkAction *action, OutlinerWindow *window);
+void outliner_action_indent       (GtkAction *action, OutlinerWindow *window);
+void outliner_action_unindent     (GtkAction *action, OutlinerWindow *window);
+void outliner_action_move_down    (GtkAction *action, OutlinerWindow *window);
+void outliner_action_move_up      (GtkAction *action, OutlinerWindow *window);
+void outliner_action_expand_all   (GtkAction *action, OutlinerWindow *window);
+void outliner_action_collapse_all (GtkAction *action, OutlinerWindow *window);
+
+void outliner_action_about        (GtkAction *action, OutlinerWindow *window);
+
+void outliner_action_dummy      (GtkAction *action, OutlinerWindow *window);
 
 #endif

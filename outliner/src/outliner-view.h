@@ -44,7 +44,18 @@ struct _OutlinerViewClass {
 
 GType             outliner_view_get_type     (void);
 GtkWidget        *outliner_view_new          (OutlinerDocument *doc);
-void              outliner_view_add_item     (OutlinerView *view, gboolean child);
 OutlinerDocument *outliner_view_get_document (OutlinerView *view);
+void              outliner_view_add_item     (OutlinerView *view);
+
+typedef void (* OutlinerViewForeachFunc) (OutlinerDocument *doc,
+                                          GtkTreePath *path,
+                                          gpointer data);
+
+void outliner_view_foreach_selected_subtree (OutlinerView *view, OutlinerViewForeachFunc func,
+                                             gboolean backwards, gpointer data);
+
+void outliner_view_indent (OutlinerView *view, GtkTreePath *path, gpointer data);
+
+gboolean outliner_view_get_last_selected (OutlinerView *view, GtkTreeIter *item);
 
 #endif

@@ -41,6 +41,15 @@ outliner_text_view_editable_key_press (GtkWidget *widget, GdkEventKey *event)
 {
   switch (event->keyval)
     {
+      case GDK_Return:
+      {
+        if (event->state == 0) {
+          gtk_cell_editable_editing_done (GTK_CELL_EDITABLE (widget));
+          gtk_cell_editable_remove_widget (GTK_CELL_EDITABLE (widget));
+          return TRUE;
+        }
+        break;
+      }
       case GDK_Escape:
       {
         gtk_cell_editable_editing_done (GTK_CELL_EDITABLE (widget));
@@ -48,10 +57,8 @@ outliner_text_view_editable_key_press (GtkWidget *widget, GdkEventKey *event)
         return TRUE;
         break;
       }
-      default:
-        return FALSE;
-	    break;
     }
+    return FALSE;
 }
 
 static void

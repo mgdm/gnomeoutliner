@@ -22,6 +22,7 @@
  */
 
 #include "outliner-document.h"
+#include "outliner-marshal.h"
 
 #ifdef HAVE_CONFIG_H
  #include <config.h>
@@ -44,6 +45,138 @@ static void outliner_document_init       (OutlinerDocument      *doc);
 static void outliner_document_class_init (OutlinerDocumentClass *class);
 static void outliner_document_finalize   (GObject               *object);
 
+enum {
+  ROW_MOVED,
+  LAST_SIGNAL
+};
+
+static guint outliner_document_signals[LAST_SIGNAL] = { 0 }; 
+
+static void
+copy_subtree (GtkTreeStore *store, GtkTreeIter *olditer, GtkTreeIter *newparent, GtkTreeIter *newsibling)
+{
+  GtkTreeIter newiter, child;
+  GtkTreePath *oldpath, *newpath;
+  gchar *string;
+  gint i;
+
+  if (newsibling)
+    gtk_tree_store_insert_after(store, &newiter, newparent, newsibling);
+  else
+    gtk_tree_store_append(store, &newiter, newparent);
+
+  gtk_tree_model_get(GTK_TREE_MODEL (store), olditer, 0, &string, -1);
+  gtk_tree_store_set(store, &newiter, 0, string, -1);
+
+  for (i = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store), olditer); i > 0; i--) {
+    gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &child, olditer, i-1);
+    copy_subtree (store, &child, &newiter, NULL);
+  }
+
+  oldpath = gtk_tree_model_get_path(GTK_TREE_MODEL (store), olditer);
+  newpath = gtk_tree_model_get_path(GTK_TREE_MODEL (store), &newiter);
+  g_signal_emit(G_OBJECT (store), outliner_document_signals[ROW_MOVED], 0, oldpath, newpath);
+  gtk_tree_path_free(oldpath);
+  gtk_tree_path_free(newpath);
+
+}
+
+static void
+remove_subtree (GtkTreeStore *store, GtkTreeIter *olditer)
+{
+  GtkTreeIter child;
+
+  while (gtk_tree_model_iter_children(GTK_TREE_MODEL (store), &child, olditer))
+    remove_subtree (store, &child);
+
+  gtk_tree_store_remove(store, olditer);
+}
+
+static void
+move_subtree (GtkTreeStore *store, GtkTreeIter *olditer, GtkTreeIter *newparent, GtkTreeIter *newsibling)
+{
+  copy_subtree (store, olditer, newparent, newsibling);
+  remove_subtree (store, olditer);
+}
+
+void
+outliner_document_indent (OutlinerDocument *doc, GtkTreePath *path, gpointer data)
+{
+  GtkTreeIter cur, prev, new;
+
+  GtkTreeModel *model = GTK_TREE_MODEL (doc);
+  GtkTreeStore *store = GTK_TREE_STORE (doc);
+
+  gtk_tree_model_get_iter(model, &cur, path);
+  if (!gtk_tree_path_prev(path))
+    return;
+  gtk_tree_model_get_iter(model, &prev, path);
+
+  move_subtree (store, &cur, &prev, NULL);
+}
+
+void
+outliner_document_unindent (OutlinerDocument *doc, GtkTreePath *path, gpointer data)
+{
+  GtkTreeIter cur, parent, grandparent, new;
+
+  GtkTreeModel *model = GTK_TREE_MODEL (doc);
+  GtkTreeStore *store = GTK_TREE_STORE (doc);
+
+  gtk_tree_model_get_iter(model, &cur, path);
+  if (!gtk_tree_model_iter_parent(model, &parent, &cur))
+    return;
+
+  if (gtk_tree_model_iter_parent(model, &grandparent, &parent))
+    move_subtree (store, &cur, &grandparent, &parent);
+  else
+    move_subtree (store, &cur, NULL, &parent);
+}
+
+void
+outliner_document_move_up (OutlinerDocument *doc, GtkTreePath *path, gpointer data)
+{
+  GtkTreeIter cur, prev;
+
+  GtkTreeModel *model = GTK_TREE_MODEL (doc);
+  GtkTreeStore *store = GTK_TREE_STORE (doc);
+
+  gtk_tree_model_get_iter(model, &cur, path);
+  if (!gtk_tree_path_prev(path))
+    return;
+  gtk_tree_model_get_iter(model, &prev, path);
+
+  /* this will fail on top-level items: waiting on gnome bug #139785 */
+  gtk_tree_store_swap(store, &cur, &prev);
+}
+
+void
+outliner_document_move_down (OutlinerDocument *doc, GtkTreePath *path, gpointer data)
+{
+  GtkTreeIter cur, next;
+
+  GtkTreeModel *model = GTK_TREE_MODEL (doc);
+  GtkTreeStore *store = GTK_TREE_STORE (doc);
+
+  gtk_tree_model_get_iter(model, &cur, path);
+  next = cur;
+  gtk_tree_model_iter_next(model, &next);
+
+  /* this will fail on top-level items: waiting on gnome bug #139785 */
+  gtk_tree_store_swap(store, &cur, &next);
+}
+
+void
+outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointer data)
+{
+  GtkTreeIter cur;
+
+  GtkTreeModel *model = GTK_TREE_MODEL (doc);
+  GtkTreeStore *store = GTK_TREE_STORE (doc);
+
+  gtk_tree_model_get_iter(model, &cur, path);
+  gtk_tree_store_remove(store, &cur);
+}
 
 /*-------------*/
 
@@ -61,6 +194,16 @@ outliner_document_class_init (OutlinerDocumentClass *class)
   parent_class = g_type_class_peek_parent (class);
 
   object_class->finalize = outliner_document_finalize;
+
+  outliner_document_signals[ROW_MOVED] =
+    g_signal_new ("row_moved",
+                  OUTLINER_TYPE_DOCUMENT,
+                  G_SIGNAL_RUN_FIRST,
+                  G_STRUCT_OFFSET (OutlinerDocumentClass, row_moved),
+                  NULL, NULL,
+                  outliner_marshal_VOID__POINTER_POINTER,
+                  G_TYPE_NONE, 2,
+                  G_TYPE_POINTER, G_TYPE_POINTER);
 
   g_type_class_add_private (class, sizeof (OutlinerDocumentPrivate));
 }

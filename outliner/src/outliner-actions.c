@@ -53,7 +53,8 @@ outliner_action_new (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  /* TODO: make a new doc */
+  gtk_tree_store_clear(GTK_TREE_STORE (doc));
+  outliner_view_add_item(view);
 }
 
 void
@@ -65,7 +66,6 @@ outliner_action_open (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  /* TODO: open a doc */
   outliner_file_open(window, doc);
 }
 
@@ -90,7 +90,6 @@ outliner_action_save (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  /* TODO: save the doc */
   outliner_file_save(window, doc);
 }
 
@@ -103,7 +102,6 @@ outliner_action_save_as (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  /* TODO: save as the doc */
   outliner_file_save_as(window, doc);
 }
 
@@ -122,31 +120,79 @@ outliner_action_export (GtkAction *action, OutlinerWindow *window)
 
 /* outline actions */
 void
+outliner_action_add_item (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  outliner_view_add_item(view);
+}
+
+void
 outliner_action_indent (GtkAction *action, OutlinerWindow *window)
 {
-  const gchar *name =  gtk_action_get_name(action);
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  outliner_view_foreach_selected_subtree(view, outliner_document_indent, FALSE, NULL);
+}
 
-  if (strcmp(name, "IndentAction") == 0) {
+void
+outliner_action_unindent (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  outliner_view_foreach_selected_subtree(view, outliner_document_unindent, TRUE, NULL);
+}
 
-  }
-  else if (strcmp(name, "UnindentAction") == 0) {
+void
+outliner_action_move_up (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  outliner_view_foreach_selected_subtree(view, outliner_document_move_up, FALSE, NULL);
+}
 
-  }
-  else
-    g_message(name);
+void
+outliner_action_move_down (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  outliner_view_foreach_selected_subtree(view, outliner_document_move_down, TRUE, NULL);
+}
+
+void
+outliner_action_expand_all (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  gtk_tree_view_expand_all(GTK_TREE_VIEW (view));
+}
+
+void
+outliner_action_collapse_all (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  gtk_tree_view_collapse_all(GTK_TREE_VIEW (view));
+}
+
+void
+outliner_action_delete_item (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  outliner_view_foreach_selected_subtree(view, outliner_document_delete_item, TRUE, NULL);
+}
+
+void
+outliner_action_select_all (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  view = outliner_window_get_view(window);
+  gtk_tree_selection_select_all(gtk_tree_view_get_selection(GTK_TREE_VIEW (view)));
 }
 
 
 /* help actions */
-void
-outliner_action_new_child (GtkAction *action, OutlinerWindow *window)
-{
-  OutlinerView *view;
-
-  view = outliner_window_get_view(window);
-  outliner_view_add_item(OUTLINER_VIEW (view), TRUE);
-}
-
 void
 outliner_action_about (GtkAction *action, OutlinerWindow *window)
 {

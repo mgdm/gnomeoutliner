@@ -36,7 +36,16 @@
 
 typedef struct _OutlinerDocumentPrivate OutlinerDocumentPrivate;
 struct _OutlinerDocumentPrivate {
-  int dummy; /* XXX */
+  gboolean changed;
+
+  gint w_top, w_left, w_right, w_bottom;
+
+  GArray  *expanded;
+  GSList  *column_names;
+  GString *title;
+  GString *uri;
+  GString *author;
+  GString *email;
 };
 
 static GtkTreeStoreClass *parent_class = NULL;
@@ -111,6 +120,7 @@ outliner_document_indent (OutlinerDocument *doc, GtkTreePath *path, gpointer dat
 {
   GtkTreeIter cur, prev, new;
 
+
   GtkTreeModel *model = GTK_TREE_MODEL (doc);
   GtkTreeStore *store = GTK_TREE_STORE (doc);
 
@@ -121,7 +131,7 @@ outliner_document_indent (OutlinerDocument *doc, GtkTreePath *path, gpointer dat
 
   move_subtree (store, &cur, &prev, NULL);
 
-  doc->changed=TRUE;
+  outliner_document_set_changed(doc, TRUE);
 }
 
 void
@@ -141,7 +151,7 @@ outliner_document_unindent (OutlinerDocument *doc, GtkTreePath *path, gpointer d
   else
     move_subtree (store, &cur, NULL, &parent);
 
-  doc->changed=TRUE;
+outliner_document_set_changed(doc, TRUE);
 }
 
 void
@@ -160,7 +170,7 @@ outliner_document_move_up (OutlinerDocument *doc, GtkTreePath *path, gpointer da
   /* this will fail on top-level items: waiting on gnome bug #139785 */
   gtk_tree_store_swap(store, &cur, &prev);
 
-  doc->changed=TRUE;
+  outliner_document_set_changed(doc, TRUE);
 }
 
 void
@@ -178,7 +188,7 @@ outliner_document_move_down (OutlinerDocument *doc, GtkTreePath *path, gpointer 
   /* this will fail on top-level items: waiting on gnome bug #139785 */
   gtk_tree_store_swap(store, &cur, &next);
 
-  doc->changed=TRUE;
+  outliner_document_set_changed(doc, TRUE);
 }
 
 void
@@ -192,42 +202,183 @@ outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointe
   gtk_tree_model_get_iter(model, &cur, path);
   gtk_tree_store_remove(store, &cur);
 
-  doc->changed=TRUE;
+  outliner_document_set_changed(doc, TRUE);
 }
+
+
+/* Accesor methods  */
+
+const GString*
+outliner_document_get_title   (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->title;
+}
+
+const GString*
+outliner_document_get_author   (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->author;
+}
+
+const GString*
+outliner_document_get_email   (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->email;
+}
+
+const GString*
+outliner_document_get_uri   (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->uri;
+}
+
+gboolean
+outliner_document_get_changed  (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->changed;
+}
+
+gint 
+outliner_document_get_w_top   (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->w_top;
+} 
+
+gint
+outliner_document_get_w_left  (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->w_left;
+} 
+
+gint
+outliner_document_get_w_right (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->w_right;
+} 
+
+gint 
+outliner_document_get_w_bottom   (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->w_bottom;
+} 
+
+const GArray*  
+outliner_document_get_expanded(OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->expanded;
+} 
+
+const GSList*  
+outliner_document_get_column_names (OutlinerDocument *doc)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  return priv->column_names;
+} 
+
+
+
+/* Modifier  methods*/
 
 void
 outliner_document_set_title   (OutlinerDocument *doc, gchar *title)
 {
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
   GString *new_title = g_string_new(title);
-  g_string_free(doc->title, TRUE);
-  doc->title = new_title;
-  doc->changed = TRUE;
+
+  g_string_free(priv->title, TRUE);
+  priv->title = new_title;
+  priv->changed = TRUE;
 }
 
 void
 outliner_document_set_author   (OutlinerDocument *doc, gchar *author)
 {
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
   GString *new_author = g_string_new(author);
-  g_string_free(doc->author, TRUE);
-  doc->author = new_author;
-  doc->changed = TRUE;
+  g_string_free(priv->author, TRUE);
+  priv->author = new_author;
+  priv->changed = TRUE;
 }
 
 void
 outliner_document_set_email   (OutlinerDocument *doc, gchar *email)
 {
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
   GString *new_email = g_string_new(email);
-  g_string_free(doc->email, TRUE);
-  doc->email = new_email;
-  doc->changed = TRUE;
+  g_string_free(priv->email, TRUE);
+  priv->email = new_email;
+  priv->changed = TRUE;
 }
 
 void
 outliner_document_set_uri   (OutlinerDocument *doc, gchar *uri)
 {
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
   GString *new_uri = g_string_new(uri);
-  g_string_free(doc->uri, TRUE);
-  doc->uri = new_uri;
+  g_string_free(priv->uri, TRUE);
+  priv->uri = new_uri;
+}
+
+void outliner_document_set_expanded(OutlinerDocument *doc, GArray *expanded)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  GArray *new_expanded = g_array_sized_new(FALSE, FALSE, sizeof(gint),expanded->len);
+  g_array_insert_vals (new_expanded, 0, expanded->data, expanded->len);
+  g_array_free(priv->expanded, TRUE); 
+  priv->expanded = new_expanded;
+}
+
+void
+outliner_document_set_changed  (OutlinerDocument *doc, gboolean changed)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  priv->changed = changed;
+}
+
+void
+outliner_document_set_w_top   (OutlinerDocument *doc, gint w_top)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  priv->w_top = w_top;
+}
+
+void 
+outliner_document_set_w_left  (OutlinerDocument *doc, gint w_left)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  priv->w_left = w_left;
+}
+
+void 
+outliner_document_set_w_right (OutlinerDocument *doc, gint w_right)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  priv->w_right = w_right;
+}
+
+void
+outliner_document_set_w_bottom(OutlinerDocument *doc, gint w_bottom)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  priv->w_bottom = w_bottom;
+}
+
+void outliner_document_set_column_names(OutlinerDocument *doc, GSList *column_names)
+{
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  GSList* new_column_names = g_slist_copy(column_names);
+  g_slist_free(priv->column_names);
+  priv->column_names = new_column_names;
 }
 
 /*-------------*/
@@ -235,12 +386,13 @@ outliner_document_set_uri   (OutlinerDocument *doc, gchar *uri)
 static void
 outliner_document_init (OutlinerDocument *doc)
 {
-  doc->column_names = NULL;
-  doc->title = g_string_new("Untitled");
-  doc->author = g_string_new(NULL);
-  doc->email = g_string_new(NULL);
-  doc->uri = g_string_new(NULL);
-  doc->changed = FALSE;
+  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE(doc);
+  priv->column_names = NULL;
+  priv->title = g_string_new("Untitled");
+  priv->author = g_string_new(NULL);
+  priv->email = g_string_new(NULL);
+  priv->uri = g_string_new(NULL);
+  priv->changed = FALSE;
 }
 
 static void

@@ -35,16 +35,6 @@ typedef struct _OutlinerDocumentClass OutlinerDocumentClass;
 
 struct _OutlinerDocument {
   GtkTreeStore parent;
-  gboolean changed;
-
-  gint w_top, w_left, w_right, w_bottom;
-
-  GArray  *expanded;
-  GSList   *column_names;
-  GString *title;
-  GString *uri;
-  GString *author;
-  GString *email;
 };
 
 struct _OutlinerDocumentClass {
@@ -69,9 +59,31 @@ void outliner_document_unindent    (OutlinerDocument *doc, GtkTreePath *path, gp
 void outliner_document_move_down   (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
 void outliner_document_move_up     (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
 void outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
-void outliner_document_set_title   (OutlinerDocument *doc, gchar *title);
-void outliner_document_set_author  (OutlinerDocument *doc, gchar *author);
-void outliner_document_set_email   (OutlinerDocument *doc, gchar *email);
-void outliner_document_set_uri     (OutlinerDocument *doc, gchar *uri);
+
+/*Accesor methods for document's attributes */
+const GString* outliner_document_get_title        (OutlinerDocument *doc);
+const GString* outliner_document_get_author       (OutlinerDocument *doc);
+const GString* outliner_document_get_email        (OutlinerDocument *doc);
+const GString* outliner_document_get_uri          (OutlinerDocument *doc);
+gboolean       outliner_document_get_changed      (OutlinerDocument *doc);
+gint           outliner_document_get_w_top        (OutlinerDocument *doc); 
+gint           outliner_document_get_w_left       (OutlinerDocument *doc); 
+gint           outliner_document_get_w_right      (OutlinerDocument *doc); 
+gint           outliner_document_get_w_bottom     (OutlinerDocument *doc); 
+const GArray*  outliner_document_get_expanded     (OutlinerDocument *doc); 
+const GSList*  outliner_document_get_column_names (OutlinerDocument *doc);
+
+/*Modifier methods for document's attributes */
+void outliner_document_set_title        (OutlinerDocument *doc, gchar *title);
+void outliner_document_set_author       (OutlinerDocument *doc, gchar *author);
+void outliner_document_set_email        (OutlinerDocument *doc, gchar *email);
+void outliner_document_set_uri          (OutlinerDocument *doc, gchar *uri);
+void outliner_document_set_changed      (OutlinerDocument *doc, gboolean changed);
+void outliner_document_set_w_top        (OutlinerDocument *doc, gint w_top); 
+void outliner_document_set_w_left       (OutlinerDocument *doc, gint w_left); 
+void outliner_document_set_w_right      (OutlinerDocument *doc, gint w_right); 
+void outliner_document_set_w_bottom     (OutlinerDocument *doc, gint w_bottom); 
+void outliner_document_set_expanded     (OutlinerDocument *doc, GArray *expanded); 
+void outliner_document_set_column_names (OutlinerDocument *doc, GSList *column_names); 
 
 #endif

@@ -71,9 +71,9 @@ outliner_file_save_as(OutlinerWindow *window, OutlinerDocument *doc)
 void 
 outliner_file_save(OutlinerWindow *window, OutlinerDocument *doc) 
 {
-
-  if (doc->uri->len != 0)
-    outliner_opml_save_file(window, doc, doc->uri->str);
+  const GString* uri = outliner_document_get_uri(doc);
+  if (uri->len != 0)
+    outliner_opml_save_file(window, doc, uri->str);
   else
     outliner_file_save_as(window, doc);
 }
@@ -83,7 +83,7 @@ outliner_file_save_changed(OutlinerWindow *window, OutlinerDocument *doc)
 {
   GtkWidget *save_file_question;
 
-  if (doc->changed == FALSE)
+  if (outliner_document_get_changed(doc) == FALSE)
     return;
 
   save_file_question = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, _("File changed, save file?"));
@@ -115,15 +115,15 @@ outliner_file_open(OutlinerWindow *window, OutlinerDocument *doc)
 
     /* We shouldn't resize a window larger than the screen size */
     screen = gtk_window_get_screen(GTK_WINDOW(window));
-    if (doc->w_right > gdk_screen_get_width(screen))
-        doc->w_right = gdk_screen_get_width(screen) - 10;
-    if (doc->w_bottom > gdk_screen_get_height(screen))
-        doc->w_bottom = gdk_screen_get_height(screen) - 10;
+    if (outliner_document_get_w_right(doc) > gdk_screen_get_width(screen))
+      outliner_document_set_w_right(doc, gdk_screen_get_width(screen) - 10);
+    if (outliner_document_get_w_bottom(doc) > gdk_screen_get_height(screen))
+        outliner_document_set_w_bottom(doc, gdk_screen_get_height(screen) - 10);
 
-    w = doc->w_right - doc->w_left;
-    h = doc->w_bottom - doc->w_top;
+    w = outliner_document_get_w_right(doc) - outliner_document_get_w_left(doc);
+    h = outliner_document_get_w_bottom(doc) - outliner_document_get_w_top(doc);
     gtk_window_resize(GTK_WINDOW(window), w, h);
-    gtk_window_move(GTK_WINDOW(window), doc->w_left, doc->w_top);
+    gtk_window_move(GTK_WINDOW(window), outliner_document_get_w_left(doc), outliner_document_get_w_top(doc));
 
   }
   gtk_widget_destroy(dialog);

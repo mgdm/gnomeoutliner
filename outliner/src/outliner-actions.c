@@ -145,10 +145,6 @@ outliner_action_quit (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view); 
   outliner_file_save_changed(window, doc);
-  if (doc->changed)
-    g_printf("doch changed\n");
-  else
-    g_printf("doch NOT changed\n");
   gtk_main_quit();
 
 }

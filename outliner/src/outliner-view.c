@@ -84,7 +84,7 @@ outliner_view_add_item (OutlinerView *view)
       gtk_tree_view_get_column(GTK_TREE_VIEW (view), 0), NULL, TRUE);
   gtk_tree_path_free(path);
 
-  doc->changed = TRUE;
+  outliner_document_set_changed(doc, TRUE);
 }
 
 void

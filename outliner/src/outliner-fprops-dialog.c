@@ -113,11 +113,11 @@ outliner_fprops_dialog_init (OutlinerFPropsDialog *dialog)
   gtk_table_attach (GTK_TABLE(table), priv->email_label, 0, 1, 7, 8, GTK_FILL, GTK_EXPAND, 0, 0);
 
   priv->title_entry = gtk_entry_new ();
-  gtk_entry_set_text(GTK_ENTRY(priv->title_entry), doc->title->str);
+  gtk_entry_set_text(GTK_ENTRY(priv->title_entry), outliner_document_get_title(doc)->str);
   gtk_table_attach (GTK_TABLE(table), priv->title_entry, 1, 2, 0, 1, GTK_EXPAND, GTK_EXPAND, 0, 0);
 
   priv->file_label2 = gtk_label_new (NULL);
-  gtk_label_set_text(GTK_LABEL(priv->file_label2), doc->uri->str);
+  gtk_label_set_text(GTK_LABEL(priv->file_label2), outliner_document_get_uri(doc)->str);
   gtk_label_set_selectable(GTK_LABEL(priv->file_label2), TRUE);
   gtk_table_attach (GTK_TABLE(table), priv->file_label2, 1, 2, 1, 2, GTK_EXPAND, GTK_EXPAND, 0, 0);
 
@@ -130,11 +130,11 @@ outliner_fprops_dialog_init (OutlinerFPropsDialog *dialog)
   gtk_table_attach (GTK_TABLE(table), priv->modified_label2, 1, 2, 4, 5, GTK_EXPAND, GTK_EXPAND, 0, 0);
 
   priv->author_entry = gtk_entry_new ();
-  gtk_entry_set_text(GTK_ENTRY(priv->author_entry), doc->author->str);
+  gtk_entry_set_text(GTK_ENTRY(priv->author_entry), outliner_document_get_author(doc)->str);
   gtk_table_attach (GTK_TABLE(table), priv->author_entry, 1, 2, 6, 7, GTK_EXPAND, GTK_EXPAND, 0, 0);
 
   priv->email_entry = gtk_entry_new ();
-  gtk_entry_set_text(GTK_ENTRY(priv->email_entry), doc->email->str);
+  gtk_entry_set_text(GTK_ENTRY(priv->email_entry), outliner_document_get_email(doc)->str);
   gtk_table_attach (GTK_TABLE(table), priv->email_entry, 1, 2, 7, 8, GTK_EXPAND, GTK_EXPAND, 0, 0);
 
   gtk_widget_show_all (priv->window);

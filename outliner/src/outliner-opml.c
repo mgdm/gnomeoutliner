@@ -91,24 +91,24 @@ save_head(OutlinerWindow *window, OutlinerDocument *doc, xmlNodePtr head)
 
   gtk_window_get_size(GTK_WINDOW(window), &w, &h);
   gtk_window_get_position(GTK_WINDOW(window), &l, &t);
-  doc->w_top = t;
-  doc->w_left = l;
-  doc->w_bottom = t+h;
-  doc->w_right = l+w;
+  outliner_document_set_w_top (doc,  t);
+  outliner_document_set_w_left (doc,  l);
+  outliner_document_set_w_bottom (doc,  t+h);
+  outliner_document_set_w_right (doc,  l+w);
 
   /* XXX */
   
-  xmlNewTextChild(head, NULL, "title", doc->title->str);
-  xmlNewTextChild(head, NULL, "ownerName", doc->author->str);
-  xmlNewTextChild(head, NULL, "ownerEmail", doc->email->str);
+  xmlNewTextChild(head, NULL, "title", outliner_document_get_title(doc)->str );
+  xmlNewTextChild(head, NULL, "ownerName", outliner_document_get_author(doc)->str );
+  xmlNewTextChild(head, NULL, "ownerEmail", outliner_document_get_email(doc)->str );
   
-  g_string_printf(string, "%i", doc->w_top);
+  g_string_printf(string, "%i", outliner_document_get_w_top(doc));
   xmlNewTextChild(head, NULL, "windowTop", string->str);
-  g_string_printf(string, "%i", doc->w_bottom);
+  g_string_printf(string, "%i", outliner_document_get_w_bottom(doc));
   xmlNewTextChild(head, NULL, "windowBottom", string->str);
-  g_string_printf(string, "%i", doc->w_left);
+  g_string_printf(string, "%i", outliner_document_get_w_left(doc));
   xmlNewTextChild(head, NULL, "windowLeft", string->str);
-  g_string_printf(string, "%i", doc->w_right);
+  g_string_printf(string, "%i", outliner_document_get_w_right(doc));
   xmlNewTextChild(head, NULL, "windowRight", string->str);
   g_string_free(string, TRUE);
   
@@ -147,7 +147,7 @@ outliner_opml_save_file(OutlinerWindow *window, OutlinerDocument *doc, gchar *fi
     outliner_mainwindow_set_title();
     */
 
-    doc->changed= FALSE;
+    outliner_document_set_changed (doc, FALSE);
   }
 }
 
@@ -181,8 +181,8 @@ parse_recursively(OutlinerDocument *doc, xmlNodePtr cur, GtkTreeIter *parent)
           gtk_tree_store_set(GTK_TREE_STORE (doc), &iter, COL_STATUS, status, -1);       
         }
         else {
-          if (!g_slist_find(doc->column_names, cur_attr->name)) {
-            g_slist_append(doc->column_names, cur_attr->name);
+          if (!g_slist_find(outliner_document_get_column_names(doc), cur_attr->name)) {
+            g_slist_append(outliner_document_get_column_names, cur_attr->name);
           }
           g_hash_table_insert(attr_hash, g_strdup(cur_attr->name), g_strdup(xmlGetProp(cur, cur_attr->name)));
         }
@@ -200,18 +200,18 @@ parse_recursively(OutlinerDocument *doc, xmlNodePtr cur, GtkTreeIter *parent)
 static void
 parse_head(OutlinerDocument *doc, xmlDocPtr xmldoc, xmlNodePtr cur) 
 {
-  doc->expanded = g_array_new(FALSE, FALSE, sizeof(gint));
+
 
   while (cur != NULL) {
     
     if ((!xmlStrcmp(cur->name, "windowTop")))
-      doc->w_top = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+      outliner_document_set_w_top (doc,  atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1)));
     else if ((!xmlStrcmp(cur->name, "windowLeft")))
-      doc->w_left = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+      outliner_document_set_w_left (doc,  atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1)));
     else if ((!xmlStrcmp(cur->name, "windowRight")))
-      doc->w_right = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+      outliner_document_set_w_right (doc,  atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1)));
     else if ((!xmlStrcmp(cur->name, "windowBottom")))
-      doc->w_bottom = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+      outliner_document_set_w_bottom (doc,  atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1)));
     
     if ((!xmlStrcmp(cur->name, "title")))
       outliner_document_set_title(doc, xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
@@ -224,9 +224,11 @@ parse_head(OutlinerDocument *doc, xmlDocPtr xmldoc, xmlNodePtr cur)
     {
       gchar **rows;
       gint i;
+      GArray* new_expanded = g_array_new(FALSE, FALSE, sizeof(gint));
       rows = g_strsplit(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1), ",", 0);
       for(i = 0; rows[i] != NULL; i++)
-        g_array_append_val(doc->expanded, rows[i]);
+        g_array_append_val(new_expanded, rows[i]);
+      g_array_free(new_expanded, FALSE);
       g_strfreev(rows);
     }
 
@@ -280,6 +282,6 @@ outliner_opml_load_file(OutlinerDocument *doc, gchar *filename)
   /*
   outliner_mainwindow_set_title();	
   */
-  doc->changed = FALSE;
+  outliner_document_set_changed (doc, FALSE);
 }
 

@@ -36,6 +36,7 @@ void outliner_action_open_location (GtkAction *action, OutlinerWindow *window);
 void outliner_action_save         (GtkAction *action, OutlinerWindow *window);
 void outliner_action_save_as      (GtkAction *action, OutlinerWindow *window);
 void outliner_action_export       (GtkAction *action, OutlinerWindow *window);
+void outliner_action_properties   (GtkAction *action, OutlinerWindow *window);
 void outliner_action_quit       (GtkAction *action, OutlinerWindow *window);
 
 void outliner_action_delete_item  (GtkAction *action, OutlinerWindow *window);

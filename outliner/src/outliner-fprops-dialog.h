@@ -1,5 +1,5 @@
 /**
- * outliner-opml.h
+ * outliner-fprops-dialog.h
  *
  * Gnome Outliner is the legal property of its developers, whose names are
  * too numerous to list here.  Please refer to the COPYRIGHT file distributed
@@ -21,15 +21,30 @@
  *
  */
 
-#ifndef OUTLINER_OPML_H
-#define OUTLINER_OPML_H
+#ifndef OUTLINER_FPROPS_DIALOG_H
+#define OUTLINER_FPROPS_DIALOG_H
 
-#include "outliner-document.h"
 #include "outliner-window.h"
+#include "outliner-view.h"
+#include "outliner-document.h"
 
-#include <glib.h>
+#include <gtk/gtkwindow.h>
 
-void outliner_opml_save_file(OutlinerWindow *window, OutlinerDocument *doc, gchar *filename);
-void outliner_opml_load_file(OutlinerDocument *doc, gchar *filename);
+#define OUTLINER_TYPE_FPROPS_DIALOG (outliner_fprops_dialog_get_type ())
+
+typedef struct _OutlinerFPropsDialog      OutlinerFPropsDialog;
+typedef struct _OutlinerFPropsDialogClass OutlinerFPropsDialogClass;
+
+struct _OutlinerFPropsDialog {
+  GtkWindow parent;
+};
+
+struct _OutlinerFPropsDialogClass {
+  GtkWindowClass parent_class;
+};
+
+GType         outliner_fprops_dialog_get_type (void);
+GtkWidget    *outliner_fprops_dialog_new      (OutlinerDocument *tmpdoc);
+
 
 #endif

@@ -38,7 +38,8 @@
 typedef struct _OutlinerViewPrivate OutlinerViewPrivate;
 struct _OutlinerViewPrivate {
   OutlinerDocument  *document;
-  GtkCellRenderer   *renderer;
+  GtkCellRenderer   *text_renderer;
+  GtkCellRenderer   *toggle_renderer;
   GtkTreeViewColumn *column;
   GtkTreeSelection  *sel;
 };
@@ -83,7 +84,7 @@ outliner_view_add_item (OutlinerView *view)
       gtk_tree_view_get_column(GTK_TREE_VIEW (view), 0), NULL, TRUE);
   gtk_tree_path_free(path);
 
-   doc->changed = TRUE;
+  doc->changed = TRUE;
 }
 
 void
@@ -157,7 +158,23 @@ save_celltext(GtkCellRenderer *rend, gchar *path, gchar *string, OutlinerView *v
   GtkTreeStore *store = GTK_TREE_STORE (priv->document);
 
   gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(store), &iter, path);
-  gtk_tree_store_set(store, &iter, 0, string, -1);
+  gtk_tree_store_set(store, &iter, COL_TEXT, string, -1);
+}
+
+static void
+save_status(GtkCellRenderer *rend, gchar *path, OutlinerView *view)
+{
+  GtkTreeIter iter;
+  gboolean status;
+
+  OutlinerViewPrivate *priv = OUTLINER_VIEW_GET_PRIVATE (view);
+  GtkTreeStore *store = GTK_TREE_STORE (priv->document);
+
+  gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(store), &iter, path);
+
+  status = gtk_cell_renderer_toggle_get_active(rend);
+  gtk_tree_store_set(store, &iter, COL_STATUS, !status, -1);
+  gtk_cell_renderer_toggle_set_active(rend, !status);
 }
 
 static void
@@ -201,6 +218,21 @@ row_deleted_cb (GtkTreeModel *model, GtkTreePath *path, gpointer data)
 	gtk_tree_view_set_cursor(tree, path, priv->column, TRUE);
   }
 }
+
+/*
+static void
+expand (OutlinerView *view)
+{
+
+  gint row = 1;
+  gint i;
+      for(i = 0; i < expanded->len ; i++) {
+        if (g_array_index(expanded, gint, i) == row)
+          gtk_tree_store(
+      }
+
+}
+*/
 
 /*-------------*/
 
@@ -248,13 +280,16 @@ outliner_view_new (OutlinerDocument *doc)
                    G_CALLBACK(row_deleted_cb), view);
 
   priv->column = gtk_tree_view_column_new();
-  gtk_tree_view_append_column(tree, priv->column);
-
-  priv->renderer = g_object_new (OUTLINER_TYPE_CELL_RENDERER_TEXT, NULL);
-  gtk_tree_view_column_pack_start(priv->column, priv->renderer, TRUE);
-  gtk_tree_view_column_add_attribute(priv->column, priv->renderer, "text", 0);
-  g_object_set(priv->renderer, "editable", TRUE, NULL);
-  g_signal_connect(priv->renderer, "edited", G_CALLBACK(save_celltext), view);
+  priv->text_renderer = g_object_new (OUTLINER_TYPE_CELL_RENDERER_TEXT, NULL);
+  priv->toggle_renderer = gtk_cell_renderer_toggle_new();
+  gtk_tree_view_column_pack_end(priv->column, priv->text_renderer, TRUE);
+  gtk_tree_view_column_add_attribute(priv->column, priv->text_renderer, "text", COL_TEXT);
+  gtk_tree_view_column_pack_end(priv->column, priv->toggle_renderer, FALSE);
+  gtk_tree_view_column_add_attribute(priv->column, priv->toggle_renderer, "active", COL_STATUS);
+  gtk_tree_view_insert_column (GTK_TREE_VIEW (view), priv->column, -1);
+  g_object_set(priv->text_renderer, "editable", TRUE, NULL);
+  g_signal_connect(priv->text_renderer, "edited", G_CALLBACK(save_celltext), view);
+  g_signal_connect(priv->toggle_renderer, "toggled", G_CALLBACK(save_status), view);
   g_message("setup column");
 
   priv->sel = gtk_tree_view_get_selection(tree);

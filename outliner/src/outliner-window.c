@@ -82,7 +82,7 @@ static GtkActionEntry action_entries[] = {
     N_("Print this outline"), G_CALLBACK (outliner_action_dummy) },
 
   { "PropertiesAction", GTK_STOCK_PROPERTIES, NULL, NULL,
-    N_("Show the properties of this outline"), G_CALLBACK (outliner_action_dummy) },
+    N_("Show the properties of this outline"), G_CALLBACK (outliner_action_properties) },
 
   { "QuitAction", GTK_STOCK_QUIT, NULL, NULL,
     N_("Quit Gnome Outliner"), G_CALLBACK(outliner_action_quit) },
@@ -293,6 +293,11 @@ key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
     outliner_action_add_item(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/UnindentAction"), window);
     return TRUE;
   }
+  /* intercept Delete */
+  else if (event->keyval == GDK_Delete) {
+    outliner_action_delete_item(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/DeleteAction"), window);
+    return TRUE;
+  }
   return FALSE;
 }
 
@@ -304,6 +309,31 @@ on_delete(GtkWidget *widget, gpointer data)
 
 }
 
+static void
+outliner_onDragDataReceived(GtkWidget *widget, GdkDragContext *context,
+                            int x, int y, GtkSelectionData *seldata, guint info,
+                            guint time, gpointer userdata)
+{
+  OutlinerWindow   *window;
+  OutlinerView     *view;
+  OutlinerDocument *doc;
+  GtkTreeIter cur, new;
+
+  window = OUTLINER_WINDOW(userdata);
+  view = outliner_window_get_view(window);
+  doc = outliner_view_get_document(view);
+
+  if (outliner_view_get_last_selected(view, &cur)) {
+    if (gtk_tree_model_iter_has_child(GTK_TREE_MODEL (doc), &cur))
+      gtk_tree_store_prepend(GTK_TREE_STORE (doc), &new, &cur);
+    else
+      gtk_tree_store_insert_after(GTK_TREE_STORE (doc), &new, NULL, &cur);
+  }
+  else
+    gtk_tree_store_prepend(GTK_TREE_STORE (doc), &new, NULL);
+
+  gtk_tree_store_set(GTK_TREE_STORE(doc), &new, COL_TEXT, (gchar*)seldata->data, -1);
+}
 
 static void
 outliner_window_init (OutlinerWindow *window)
@@ -342,6 +372,25 @@ outliner_window_init (OutlinerWindow *window)
       G_CALLBACK (merge_add_widget), priv->vbox);
   g_signal_connect (priv->merge, "connect-proxy",
       G_CALLBACK (merge_connect_proxy), window);
+
+  /* Set up drag and drop from external apps */
+  enum {
+    TARGET_STRING,
+    TARGET_URL
+  };
+
+  static GtkTargetEntry targetentries[] =
+  {
+    { "STRING",        0, TARGET_STRING },
+    { "text/plain",    0, TARGET_STRING },
+    { "text/uri-list", 0, TARGET_URL },
+  };
+
+  gtk_drag_dest_set(GTK_WIDGET(window), GTK_DEST_DEFAULT_ALL, targetentries, 3,
+                    GDK_ACTION_COPY|GDK_ACTION_MOVE|GDK_ACTION_LINK);
+
+  g_signal_connect(window, "drag_data_received",
+                   G_CALLBACK(outliner_onDragDataReceived), window);
 
   if (!gtk_ui_manager_add_ui_from_string (priv->merge, ui_info, -1, &error)) {
     g_message ("%s", error->message);

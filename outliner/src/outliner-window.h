@@ -29,6 +29,7 @@
 #include <gtk/gtkwindow.h>
 
 #define OUTLINER_TYPE_WINDOW (outliner_window_get_type ())
+#define OUTLINER_WINDOW(obj)    (G_TYPE_CHECK_INSTANCE_CAST ((obj), OUTLINER_TYPE_WINDOW, OutlinerWindow))
 
 typedef struct _OutlinerWindow      OutlinerWindow;
 typedef struct _OutlinerWindowClass OutlinerWindowClass;

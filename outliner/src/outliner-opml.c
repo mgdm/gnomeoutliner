@@ -23,6 +23,7 @@
 
 #include "outliner-opml.h"
 #include "outliner-document.h"
+#include "outliner-window.h"
 #include "xml-gnomevfs.h"
 
 #include <libgnomevfs/gnome-vfs.h>
@@ -31,19 +32,51 @@
 #include <gtk/gtk.h>
 
 static void
+save_attrs(gchar *name, gchar *value, xmlNodePtr cur)
+{
+  xmlNewProp(cur, name, value);
+}
+
+static void
 save_recursively(OutlinerDocument *doc, xmlNodePtr parent, GtkTreeIter *iter) 
 {
   gboolean val = TRUE;
   gchar *string;
+  gboolean status;
+  GHashTable *attr_hash;
   xmlNodePtr cur;
   GtkTreeIter child;
 
   while (val) {
-    gtk_tree_model_get(GTK_TREE_MODEL(doc), iter, 0, &string, -1);
     cur = xmlNewChild(parent, NULL, "outline", NULL);
+    gtk_tree_model_get(GTK_TREE_MODEL(doc), iter, COL_TEXT, &string, -1);
     xmlNewProp(cur, "text", string);
     g_free(string);
-		
+
+    gtk_tree_model_get(GTK_TREE_MODEL(doc), iter, COL_STATUS, &status, -1);
+    switch (status)
+      {
+        case TRUE:
+        {
+          xmlNewProp(cur, "_status", "checked");
+          break;
+        }
+        case FALSE:
+        {
+          xmlNewProp(cur, "_status", "unchecked");
+          break;
+        }
+        default:
+        {
+          xmlNewProp(cur, "_status", "none");
+          break;
+        }
+      }
+
+    gtk_tree_model_get(GTK_TREE_MODEL(doc), iter, COL_OTHER, &attr_hash, -1);
+    g_hash_table_foreach(attr_hash, save_attrs, cur);
+
+
     if (gtk_tree_model_iter_children(GTK_TREE_MODEL(doc), &child, iter))
       save_recursively(doc, cur, &child);
     val = gtk_tree_model_iter_next(GTK_TREE_MODEL(doc), iter);
@@ -51,39 +84,38 @@ save_recursively(OutlinerDocument *doc, xmlNodePtr parent, GtkTreeIter *iter)
 }
 
 static void
-save_head(OutlinerDocument *doc, xmlNodePtr head) 
+save_head(OutlinerWindow *window, OutlinerDocument *doc, xmlNodePtr head) 
 {
   GString *string = g_string_new(NULL);
-  /* gint h,w,t,l;	height, width, top, left */
+  gint h,w,t,l;      /* height, width, top, left */
 
-  /*
-  gtk_window_get_size(outliner->mainwindow, &w, &h);
-  gtk_window_get_position(outliner->mainwindow, &l, &t);
-  outliner->file->w_top = t;
-  outliner->file->w_left = l;
-  outliner->file->w_bottom = t+h;
-  outliner->file->w_right = l+w;
-  */
+  gtk_window_get_size(GTK_WINDOW(window), &w, &h);
+  gtk_window_get_position(GTK_WINDOW(window), &l, &t);
+  doc->w_top = t;
+  doc->w_left = l;
+  doc->w_bottom = t+h;
+  doc->w_right = l+w;
 
   /* XXX */
-  /*
-  xmlNewTextChild(head, NULL, "title", outliner->file->title);
-  xmlNewTextChild(head, NULL, "ownerName", outliner->file->ownername);
-  xmlNewTextChild(head, NULL, "ownerEmail", outliner->file->owneremail);
-  g_string_printf(string, "%i", outliner->file->w_top);
+  
+  xmlNewTextChild(head, NULL, "title", doc->title->str);
+  xmlNewTextChild(head, NULL, "ownerName", doc->author->str);
+  xmlNewTextChild(head, NULL, "ownerEmail", doc->email->str);
+  
+  g_string_printf(string, "%i", doc->w_top);
   xmlNewTextChild(head, NULL, "windowTop", string->str);
-  g_string_printf(string, "%i", outliner->file->w_bottom);
+  g_string_printf(string, "%i", doc->w_bottom);
   xmlNewTextChild(head, NULL, "windowBottom", string->str);
-  g_string_printf(string, "%i", outliner->file->w_left);
+  g_string_printf(string, "%i", doc->w_left);
   xmlNewTextChild(head, NULL, "windowLeft", string->str);
-  g_string_printf(string, "%i", outliner->file->w_right);
+  g_string_printf(string, "%i", doc->w_right);
   xmlNewTextChild(head, NULL, "windowRight", string->str);
   g_string_free(string, TRUE);
-  */
+  
 }
 
 void
-outliner_opml_save_file(OutlinerDocument *doc, gchar *filename) 
+outliner_opml_save_file(OutlinerWindow *window, OutlinerDocument *doc, gchar *filename) 
 {
   GnomeVFSHandle *handle;
   GnomeVFSResult result;
@@ -100,7 +132,7 @@ outliner_opml_save_file(OutlinerDocument *doc, gchar *filename)
     head = xmlNewChild(opml, NULL, "head",  NULL);
     body = xmlNewChild(opml, NULL, "body",  NULL);
 
-    save_head(doc, head);
+    save_head(window, doc, head);
 
     if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(doc), &iter)) {
       save_recursively(doc, body, &iter);
@@ -109,8 +141,9 @@ outliner_opml_save_file(OutlinerDocument *doc, gchar *filename)
     output = xml_gnomevfs_create_ouputbuffer(handle);
     xmlSaveFormatFileTo(output, xmldoc, NULL, 1);
     /* XXX */
+
+    outliner_document_set_uri(doc, filename);
     /*
-    outliner->file->uri = filename;
     outliner_mainwindow_set_title();
     */
 
@@ -122,11 +155,41 @@ static void
 parse_recursively(OutlinerDocument *doc, xmlNodePtr cur, GtkTreeIter *parent) 
 {
   GtkTreeIter iter;
+  gboolean status;
+  gchar *string;
+  xmlAttr *cur_attr;
+  GHashTable *attr_hash;
 
   while (cur != NULL) {
+    status = FALSE;
+    attr_hash = g_hash_table_new(g_str_hash, g_str_equal);
     if ((!xmlStrcmp(cur->name, "outline"))) {
       gtk_tree_store_append(GTK_TREE_STORE (doc), &iter, parent);
-      gtk_tree_store_set(GTK_TREE_STORE (doc), &iter, 0, xmlGetProp(cur, "text"), -1);
+      cur_attr = cur->properties;
+      while (cur_attr != NULL) {
+        if ((!xmlStrcmp(cur_attr->name, "text"))) {
+          gtk_tree_store_set(GTK_TREE_STORE (doc), &iter, COL_TEXT, xmlGetProp(cur, "text"), -1);
+        }
+        else if ((!xmlStrcmp(cur_attr->name, "_status"))) {
+          string = xmlGetProp(cur, "_status");
+
+          /* TODO: handle none/indeterminate values */
+          if (g_ascii_strncasecmp(string, "checked", strlen(string)) == 0)
+            status = TRUE;
+          else if (g_ascii_strncasecmp(string, "unchecked", strlen(string)) == 0)
+              status = FALSE;
+          gtk_tree_store_set(GTK_TREE_STORE (doc), &iter, COL_STATUS, status, -1);       
+        }
+        else {
+          if (!g_slist_find(doc->column_names, cur_attr->name)) {
+            g_slist_append(doc->column_names, cur_attr->name);
+          }
+          g_hash_table_insert(attr_hash, g_strdup(cur_attr->name), g_strdup(xmlGetProp(cur, cur_attr->name)));
+        }
+        cur_attr = cur_attr->next;
+      }
+      /* Is this the right way to store an object? */
+      gtk_tree_store_set(GTK_TREE_STORE (doc), &iter, COL_OTHER, attr_hash, -1);
     }
     if (cur->xmlChildrenNode != NULL)
       parse_recursively(doc, cur->xmlChildrenNode, &iter);
@@ -134,28 +197,42 @@ parse_recursively(OutlinerDocument *doc, xmlNodePtr cur, GtkTreeIter *parent)
   }
 }
 
-static void 
+static void
 parse_head(OutlinerDocument *doc, xmlDocPtr xmldoc, xmlNodePtr cur) 
 {
+  doc->expanded = g_array_new(FALSE, FALSE, sizeof(gint));
+
   while (cur != NULL) {
-    /*
+    
     if ((!xmlStrcmp(cur->name, "windowTop")))
-      outliner->file->w_top = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+      doc->w_top = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
     else if ((!xmlStrcmp(cur->name, "windowLeft")))
-      outliner->file->w_left = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+      doc->w_left = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
     else if ((!xmlStrcmp(cur->name, "windowRight")))
-      outliner->file->w_right = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+      doc->w_right = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
     else if ((!xmlStrcmp(cur->name, "windowBottom")))
-      outliner->file->w_bottom = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+      doc->w_bottom = atoi(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+    
     if ((!xmlStrcmp(cur->name, "title")))
-      outliner->file->title = xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1);
+      outliner_document_set_title(doc, xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
     else if ((!xmlStrcmp(cur->name, "ownerName")))
-      outliner->file->ownername = xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1);
+      outliner_document_set_author(doc, xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
     else if ((!xmlStrcmp(cur->name, "ownerEmail")))
-      outliner->file->owneremail = xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1);
-    */
+      outliner_document_set_email(doc, xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1));
+
+    if ((!xmlStrcmp(cur->name, "expansionState")))
+    {
+      gchar **rows;
+      gint i;
+      rows = g_strsplit(xmlNodeListGetString(xmldoc, cur->xmlChildrenNode, 1), ",", 0);
+      for(i = 0; rows[i] != NULL; i++)
+        g_array_append_val(doc->expanded, rows[i]);
+      g_strfreev(rows);
+    }
+
     cur = cur->next;
   }
+
 }
 
 static int 
@@ -198,8 +275,9 @@ outliner_opml_load_file(OutlinerDocument *doc, gchar *filename)
       parse_recursively(doc, cur->xmlChildrenNode, NULL);
     cur = cur->next;
   }
+
+  outliner_document_set_uri(doc, filename);
   /*
-  outliner->file->uri = filename;
   outliner_mainwindow_set_title();	
   */
   doc->changed = FALSE;

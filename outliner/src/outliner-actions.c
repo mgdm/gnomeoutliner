@@ -22,6 +22,7 @@
  */
 
 #include "outliner-window.h"
+#include "outliner-fprops-dialog.h"
 #include "outliner-view.h"
 #include "outliner-document.h"
 #include "outliner-file.h"
@@ -120,6 +121,19 @@ outliner_action_export (GtkAction *action, OutlinerWindow *window)
   doc = outliner_view_get_document(view);
 
   /* TODO: export the doc */
+}
+
+void
+outliner_action_properties (GtkAction *action, OutlinerWindow *window)
+{
+  OutlinerView *view;
+  OutlinerDocument *doc;
+  GtkWidget *dialog;
+
+  view = outliner_window_get_view(window);
+  doc = outliner_view_get_document(view);
+
+  outliner_fprops_dialog_new(doc);
 }
 
 void

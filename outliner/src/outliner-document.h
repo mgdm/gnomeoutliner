@@ -36,6 +36,15 @@ typedef struct _OutlinerDocumentClass OutlinerDocumentClass;
 struct _OutlinerDocument {
   GtkTreeStore parent;
   gboolean changed;
+
+  gint w_top, w_left, w_right, w_bottom;
+
+  GArray  *expanded;
+  GSList   *column_names;
+  GString *title;
+  GString *uri;
+  GString *author;
+  GString *email;
 };
 
 struct _OutlinerDocumentClass {
@@ -43,6 +52,14 @@ struct _OutlinerDocumentClass {
 
   void (*row_moved) (OutlinerDocument *doc, GtkTreePath *oldpath, GtkTreePath *newpath);
 };
+
+enum {
+  COL_TEXT = 0,
+  COL_STATUS,
+  COL_OTHER,
+  NUM_COLS
+};
+
 
 GType             outliner_document_get_type (void);
 OutlinerDocument *outliner_document_new      (void);
@@ -52,5 +69,9 @@ void outliner_document_unindent    (OutlinerDocument *doc, GtkTreePath *path, gp
 void outliner_document_move_down   (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
 void outliner_document_move_up     (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
 void outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void outliner_document_set_title   (OutlinerDocument *doc, gchar *title);
+void outliner_document_set_author  (OutlinerDocument *doc, gchar *author);
+void outliner_document_set_email   (OutlinerDocument *doc, gchar *email);
+void outliner_document_set_uri     (OutlinerDocument *doc, gchar *uri);
 
 #endif

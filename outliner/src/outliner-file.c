@@ -24,6 +24,7 @@
 #include "outliner-file.h"
 #include "outliner-opml.h"
 #include "outliner-document.h"
+#include "outliner-window.h"
 
 #include <glib.h>
 #include <gtk/gtk.h>
@@ -53,12 +54,12 @@ outliner_file_save_as(OutlinerWindow *window, OutlinerDocument *doc)
     else {
       if (gnome_vfs_uri_exists(gnome_vfs_uri_new(gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog))))) {
         if (gtk_dialog_run(GTK_DIALOG(overwrite)) == GTK_RESPONSE_YES) {
-          outliner_opml_save_file(doc, gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog)));
+          outliner_opml_save_file(window, doc, gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog)));
           done = TRUE;
         }
         gtk_widget_hide(overwrite);
       } else {
-        outliner_opml_save_file(doc, gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog)));
+        outliner_opml_save_file(window, doc, gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog)));
         done = TRUE;
       }
     }
@@ -70,11 +71,9 @@ outliner_file_save_as(OutlinerWindow *window, OutlinerDocument *doc)
 void 
 outliner_file_save(OutlinerWindow *window, OutlinerDocument *doc) 
 {
-  gchar *uri = NULL;
 
-  //uri = outliner_document_get_uri(doc);
-  if (uri != NULL)
-    outliner_opml_save_file(doc, uri);
+  if (doc->uri->len != 0)
+    outliner_opml_save_file(window, doc, doc->uri->str);
   else
     outliner_file_save_as(window, doc);
 }
@@ -102,7 +101,7 @@ void
 outliner_file_open(OutlinerWindow *window, OutlinerDocument *doc) 
 {
   GtkWidget *dialog;
-  /* gint w, h;	 width, height */
+  gint w, h;	/* width, height */
 
   dialog = gtk_file_chooser_dialog_new(_("Open file"), GTK_WINDOW (window), 
              GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, 
@@ -112,12 +111,12 @@ outliner_file_open(OutlinerWindow *window, OutlinerDocument *doc)
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
     outliner_opml_load_file(doc, gtk_file_chooser_get_uri(GTK_FILE_CHOOSER(dialog)));
-    /*
-    w = outliner->file->w_right - outliner->file->w_left;
-    h = outliner->file->w_bottom - outliner->file->w_top;
-    gtk_window_resize(outliner->mainwindow, w, h);
-    gtk_window_move(outliner->mainwindow, outliner->file->w_left, outliner->file->w_top);
-    */
+
+    w = doc->w_right - doc->w_left;
+    h = doc->w_bottom - doc->w_top;
+    gtk_window_resize(GTK_WINDOW(window), w, h);
+    gtk_window_move(GTK_WINDOW(window), doc->w_left, doc->w_top);
+
   }
   gtk_widget_destroy(dialog);
 }

@@ -50,6 +50,7 @@ enum {
   LAST_SIGNAL
 };
 
+
 static guint outliner_document_signals[LAST_SIGNAL] = { 0 }; 
 
 static void
@@ -58,6 +59,8 @@ copy_subtree (GtkTreeStore *store, GtkTreeIter *olditer, GtkTreeIter *newparent,
   GtkTreeIter newiter, child;
   GtkTreePath *oldpath, *newpath;
   gchar *string;
+  gboolean *status;
+  GHashTable *attr_hash;
   gint i;
 
   if (newsibling)
@@ -65,8 +68,12 @@ copy_subtree (GtkTreeStore *store, GtkTreeIter *olditer, GtkTreeIter *newparent,
   else
     gtk_tree_store_append(store, &newiter, newparent);
 
-  gtk_tree_model_get(GTK_TREE_MODEL (store), olditer, 0, &string, -1);
-  gtk_tree_store_set(store, &newiter, 0, string, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL (store), olditer, COL_TEXT, &string, -1);
+  gtk_tree_store_set(store, &newiter, COL_TEXT, string, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL (store), olditer, COL_STATUS, &status, -1);
+  gtk_tree_store_set(store, &newiter, COL_STATUS, status, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL (store), olditer, COL_OTHER, &attr_hash, -1);
+  gtk_tree_store_set(store, &newiter, COL_OTHER, attr_hash, -1);
 
   for (i = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store), olditer); i > 0; i--) {
     gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(store), &child, olditer, i-1);
@@ -188,12 +195,51 @@ outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointe
   doc->changed=TRUE;
 }
 
+void
+outliner_document_set_title   (OutlinerDocument *doc, gchar *title)
+{
+  GString *new_title = g_string_new(title);
+  g_string_free(doc->title, TRUE);
+  doc->title = new_title;
+  doc->changed = TRUE;
+}
+
+void
+outliner_document_set_author   (OutlinerDocument *doc, gchar *author)
+{
+  GString *new_author = g_string_new(author);
+  g_string_free(doc->author, TRUE);
+  doc->author = new_author;
+  doc->changed = TRUE;
+}
+
+void
+outliner_document_set_email   (OutlinerDocument *doc, gchar *email)
+{
+  GString *new_email = g_string_new(email);
+  g_string_free(doc->email, TRUE);
+  doc->email = new_email;
+  doc->changed = TRUE;
+}
+
+void
+outliner_document_set_uri   (OutlinerDocument *doc, gchar *uri)
+{
+  GString *new_uri = g_string_new(uri);
+  g_string_free(doc->uri, TRUE);
+  doc->uri = new_uri;
+}
+
 /*-------------*/
 
 static void
 outliner_document_init (OutlinerDocument *doc)
 {
-  //OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE (doc);
+  doc->column_names = NULL;
+  doc->title = g_string_new("Untitled");
+  doc->author = g_string_new(NULL);
+  doc->email = g_string_new(NULL);
+  doc->uri = g_string_new(NULL);
   doc->changed = FALSE;
 }
 
@@ -226,9 +272,9 @@ outliner_document_new (void)
   doc = g_object_new (OUTLINER_TYPE_DOCUMENT,
 		              NULL);
 
-  GType columns[] = { G_TYPE_STRING };
+  GType columns[] = { G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_POINTER };
 
-  gtk_tree_store_set_column_types (GTK_TREE_STORE (doc), 1, columns);
+  gtk_tree_store_set_column_types (GTK_TREE_STORE (doc), NUM_COLS, columns);
 
   return doc;
 }

@@ -13,6 +13,8 @@ gnome_outliner_SOURCES = \
     outliner-document.h \
     outliner-file.c \
     outliner-file.h \
+    outliner-fprops-dialog.c \
+    outliner-fprops-dialog.h \
     outliner-opml.c \
     outliner-opml.h \
     xml-gnomevfs.c \

@@ -88,6 +88,10 @@ static GtkActionEntry action_entries[] = {
     N_("Quit Gnome Outliner"), gtk_main_quit },
 
   /* Edit Menu */
+  { "UndoAction", GTK_STOCK_UNDO, NULL, "<ctrl>Z",
+    N_("Undo the last action"), G_CALLBACK (outliner_action_dummy) },
+  { "RedoAction", GTK_STOCK_REDO, NULL, "<shift><ctrl>Z",
+    N_("Redo the undone action"), G_CALLBACK (outliner_action_dummy) },
   { "CutAction", GTK_STOCK_CUT, NULL, NULL,
     N_("Cut selection to the clipboard"), G_CALLBACK (outliner_action_dummy) },
   { "CopyAction", GTK_STOCK_COPY, NULL, NULL,
@@ -98,6 +102,8 @@ static GtkActionEntry action_entries[] = {
     N_("Delete selection"), G_CALLBACK (outliner_action_delete_item) },
   { "SelectAllAction", NULL, N_("Select _All"), "<ctrl>A",
     N_("Select entire outline"), G_CALLBACK (outliner_action_select_all) },
+  { "PreferencesAction", GTK_STOCK_PREFERENCES, NULL, NULL,
+    N_("Edit application preferences"), G_CALLBACK (outliner_action_dummy) },
 
   /* Outline Menu */
   { "AddItemAction", GTK_STOCK_ADD, N_("_Add Item"), NULL,
@@ -141,11 +147,17 @@ static const gchar *ui_info =
 "     <menuitem name=\"Quit\" action=\"QuitAction\"/>"
 "  </menu>"
 "  <menu name=\"Edit\" action=\"EditMenuAction\">"
+"     <menuitem name=\"Undo\" action=\"UndoAction\"/>"
+"     <menuitem name=\"Redo\" action=\"RedoAction\"/>"
+"     <separator name=\"Sep1\"/>"
 "     <menuitem name=\"Cut\" action=\"CutAction\"/>"
 "     <menuitem name=\"Copy\" action=\"CopyAction\"/>"
 "     <menuitem name=\"Paste\" action=\"PasteAction\"/>"
 "     <menuitem name=\"Delete\" action=\"DeleteAction\"/>"
+"     <separator name=\"Sep2\"/>"
 "     <menuitem name=\"SelectAll\" action=\"SelectAllAction\"/>"
+"     <separator name=\"Sep3\"/>"
+"     <menuitem name=\"Preferences\" action=\"PreferencesAction\"/>"
 "  </menu>"
 "  <menu name=\"Outline\" action=\"OutlineMenuAction\">"
 "     <menuitem name=\"AddItem\" action=\"AddItemAction\"/>"

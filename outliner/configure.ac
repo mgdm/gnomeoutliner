@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_INIT(gnome-outliner, 0.1cvs)
+AC_INIT(gnome-outliner, 0.2cvs)
 AC_CONFIG_SRCDIR(src/outliner-main.c)
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)

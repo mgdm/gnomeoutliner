@@ -258,20 +258,22 @@ merge_add_widget (GtkUIManager *merge,
   gtk_widget_show (widget);
 }
 
+#define IS_TAB(x) ((x == GDK_Tab) || (x == GDK_ISO_Left_Tab) || (x == GDK_KP_Tab))
+
 static gboolean
 key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
   OutlinerWindow *window = data;
   OutlinerWindowPrivate *priv = OUTLINER_WINDOW_GET_PRIVATE (window);
 
-  /* intercept Tab */
-  if (event->keyval == GDK_Tab) {
-    outliner_action_indent(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/IndentAction"), window);
+  /* intercept <shift>Tab */
+  if (IS_TAB(event->keyval) && (event->state & GDK_SHIFT_MASK)) {
+    outliner_action_unindent(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/UnindentAction"), window);
     return TRUE;
   }
-  /* intercept <shift>Tab */
-  else if ((event->keyval == GDK_ISO_Left_Tab) && (event->state & GDK_SHIFT_MASK)) {
-    outliner_action_unindent(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/UnindentAction"), window);
+  /* intercept Tab */
+  else if (IS_TAB(event->keyval)) {
+    outliner_action_indent(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/IndentAction"), window);
     return TRUE;
   }
   /* intercept Return */

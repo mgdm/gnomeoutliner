@@ -72,46 +72,29 @@ outliner_file_save(OutlinerWindow *window, OutlinerDocument *doc)
 {
   gchar *uri = NULL;
 
-  uri = outliner_document_get_uri(doc);
+  //uri = outliner_document_get_uri(doc);
   if (uri != NULL)
     outliner_opml_save_file(doc, uri);
   else
     outliner_file_save_as(window, doc);
 }
 
-/** 
-* Check if the document has changed since the last saving, if it has changed prompt a dialog that offers the saving operation 
-* 
-* @param window 
-* @param doc 
-* 
-* @return The response of the dialog or  GTK_RESPONSE_OK if the document hasn't changed
-*/
-gint
+void
 outliner_file_save_changed(OutlinerWindow *window, OutlinerDocument *doc) 
 {
   GtkWidget *save_file_question;
-  gint response;
 
-  if (doc->changed)
-    {
-      save_file_question = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING, GTK_BUTTONS_NONE, _("File changed, save file?"));
-      gtk_dialog_add_buttons (GTK_DIALOG(save_file_question),GTK_STOCK_NO, GTK_RESPONSE_NO ,GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, GTK_STOCK_SAVE, GTK_RESPONSE_YES, NULL);
-      gtk_dialog_set_default_response(GTK_DIALOG (save_file_question), GTK_RESPONSE_YES);
+  if (doc->changed == FALSE)
+    return;
 
-      response = gtk_dialog_run(GTK_DIALOG(save_file_question));
-      if (response == GTK_RESPONSE_YES)
-	outliner_file_save(window, doc);
+  save_file_question = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO, _("File changed, save file?"));
+  gtk_dialog_set_default_response(GTK_DIALOG (save_file_question), GTK_RESPONSE_YES);
+  if (gtk_dialog_run(GTK_DIALOG(save_file_question)) == GTK_RESPONSE_YES)
+    outliner_file_save(window, doc);
 
-      gtk_widget_destroy(save_file_question);
-    }
-  else
-    response = GTK_RESPONSE_OK;
-  
-  return response;
+  gtk_widget_destroy(save_file_question);
+
 }
-
-
 
 
 

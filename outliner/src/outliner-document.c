@@ -36,7 +36,7 @@
 
 typedef struct _OutlinerDocumentPrivate OutlinerDocumentPrivate;
 struct _OutlinerDocumentPrivate {
-  gchar *uri;
+  int dummy; /* XXX */
 };
 
 static GtkTreeStoreClass *parent_class = NULL;
@@ -188,34 +188,12 @@ outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointe
   doc->changed=TRUE;
 }
 
-
-gchar* 
-outliner_document_get_uri     (OutlinerDocument *doc)
-{
-  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE (doc);
-  return priv->uri;
-}
-
-void   
-outliner_document_set_uri     (OutlinerDocument *doc, const gchar *new_uri)
-{
-  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE (doc);
-  if (priv->uri != NULL)
-    g_free(priv->uri);
-  priv->uri = g_strdup(new_uri);
-
-}
-
-
-
-
 /*-------------*/
 
 static void
 outliner_document_init (OutlinerDocument *doc)
 {
-  OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE (doc);
-  priv->uri = NULL;
+  //OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE (doc);
   doc->changed = FALSE;
 }
 
@@ -259,11 +237,8 @@ static void
 outliner_document_finalize (GObject *object)
 {
   OutlinerDocumentPrivate *priv = OUTLINER_DOCUMENT_GET_PRIVATE (object);
-  if (priv->uri != NULL)
-    g_free(priv->uri);
+
   G_OBJECT_CLASS (parent_class)->finalize (object);
 }
-
-
 
 G_DEFINE_TYPE (OutlinerDocument, outliner_document, GTK_TYPE_TREE_STORE);

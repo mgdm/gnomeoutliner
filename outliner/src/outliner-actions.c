@@ -53,12 +53,10 @@ outliner_action_new (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  if (outliner_file_save_changed(window, doc) != GTK_RESPONSE_CANCEL)
-    {
-      gtk_tree_store_clear(GTK_TREE_STORE (doc));
-      outliner_view_add_item(view);
-      outliner_document_set_uri(doc, NULL);
-    }
+  outliner_file_save_changed(window, doc);
+
+  gtk_tree_store_clear(GTK_TREE_STORE (doc));
+  outliner_view_add_item(view);
 }
 
 void
@@ -70,10 +68,9 @@ outliner_action_open (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  if (outliner_file_save_changed(window, doc) != GTK_RESPONSE_CANCEL)
-    {
-      outliner_file_open(window, doc);
-    }
+  outliner_file_save_changed(window, doc);
+
+  outliner_file_open(window, doc);
 }
 
 void
@@ -85,10 +82,8 @@ outliner_action_open_location (GtkAction *action, OutlinerWindow *window)
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view);
 
-  if (outliner_file_save_changed(window, doc) != GTK_RESPONSE_CANCEL)
-    {
-      ;/* TODO: open doc from location */
-    }
+  outliner_file_save_changed(window, doc);
+  /* TODO: open doc from location */
 }
 
 void
@@ -135,10 +130,12 @@ outliner_action_quit (GtkAction *action, OutlinerWindow *window)
 
   view = outliner_window_get_view(window);
   doc = outliner_view_get_document(view); 
-
-  if (outliner_file_save_changed(window, doc)!= GTK_RESPONSE_CANCEL)
-    gtk_main_quit();
-
+  outliner_file_save_changed(window, doc);
+  if (doc->changed)
+    g_printf("doch changed\n");
+  else
+    g_printf("doch NOT changed\n");
+  gtk_main_quit();
 
 }
 

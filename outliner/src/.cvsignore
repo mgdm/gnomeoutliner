@@ -1,0 +1,10 @@
+.deps
+.libs
+Makefile
+Makefile.in
+gnome-outliner
+.*.swp
+*.lo
+*.o
+outliner-marshal.c
+outliner-marshal.h

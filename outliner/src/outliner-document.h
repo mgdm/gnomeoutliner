@@ -47,10 +47,11 @@ struct _OutlinerDocumentClass {
 GType             outliner_document_get_type (void);
 OutlinerDocument *outliner_document_new      (void);
 
-void outliner_document_indent      (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
-void outliner_document_unindent    (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
-void outliner_document_move_down   (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
-void outliner_document_move_up     (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
-void outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
-
+void   outliner_document_indent      (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void   outliner_document_unindent    (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void   outliner_document_move_down   (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void   outliner_document_move_up     (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+void   outliner_document_delete_item (OutlinerDocument *doc, GtkTreePath *path, gpointer data);
+gchar* outliner_document_get_uri     (OutlinerDocument *doc);
+void   outliner_document_set_uri     (OutlinerDocument *doc, const gchar *new_uri);
 #endif

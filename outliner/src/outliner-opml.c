@@ -108,9 +108,10 @@ outliner_opml_save_file(OutlinerDocument *doc, gchar *filename)
 
     output = xml_gnomevfs_create_ouputbuffer(handle);
     xmlSaveFormatFileTo(output, xmldoc, NULL, 1);
+
+    outliner_document_set_uri(doc, filename);
     /* XXX */
     /*
-    outliner->file->uri = filename;
     outliner_mainwindow_set_title();
     */
 
@@ -196,11 +197,11 @@ outliner_opml_load_file(OutlinerDocument *doc, gchar *filename)
     }
     if ((!xmlStrcmp(cur->name, "body")) && cur->xmlChildrenNode != NULL)
       parse_recursively(doc, cur->xmlChildrenNode, NULL);
+  outliner_document_set_uri(doc, filename);
     cur = cur->next;
   }
   /*
-  outliner->file->uri = filename;
-  outliner_mainwindow_set_title();	
+   outliner_mainwindow_set_title();	
   */
   doc->changed = FALSE;
 }

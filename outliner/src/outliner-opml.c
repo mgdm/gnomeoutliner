@@ -74,7 +74,7 @@ save_recursively(OutlinerDocument *doc, xmlNodePtr parent, GtkTreeIter *iter)
       }
 
     gtk_tree_model_get(GTK_TREE_MODEL(doc), iter, COL_OTHER, &attr_hash, -1);
-    g_hash_table_foreach(attr_hash, save_attrs, cur);
+    g_hash_table_foreach(attr_hash, (GHFunc)save_attrs, cur);
 
 
     if (gtk_tree_model_iter_children(GTK_TREE_MODEL(doc), &child, iter))
@@ -182,7 +182,7 @@ parse_recursively(OutlinerDocument *doc, xmlNodePtr cur, GtkTreeIter *parent)
         }
         else {
           if (!g_slist_find(outliner_document_get_column_names(doc), cur_attr->name)) {
-            g_slist_append(outliner_document_get_column_names, cur_attr->name);
+            g_slist_append(outliner_document_get_column_names(doc), cur_attr->name);
           }
           g_hash_table_insert(attr_hash, g_strdup(cur_attr->name), g_strdup(xmlGetProp(cur, cur_attr->name)));
         }

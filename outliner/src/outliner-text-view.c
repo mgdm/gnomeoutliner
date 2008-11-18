@@ -39,11 +39,14 @@ static void outliner_text_view_start_editing (GtkCellEditable *editable,
 static gboolean
 outliner_text_view_editable_key_press (GtkWidget *widget, GdkEventKey *event)
 {
+  guint modifiers;
+  modifiers = gtk_accelerator_get_default_mod_mask();
+
   switch (event->keyval)
     {
       case GDK_Return:
       {
-        if (event->state == 0) {
+        if ((event->state & modifiers) == 0) {
           gtk_cell_editable_editing_done (GTK_CELL_EDITABLE (widget));
           gtk_cell_editable_remove_widget (GTK_CELL_EDITABLE (widget));
           return TRUE;

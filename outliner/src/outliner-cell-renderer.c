@@ -81,7 +81,7 @@ outliner_cell_renderer_text_start_editing (GtkCellRenderer      *cell,
     return NULL;
 
   textview = g_object_new (OUTLINER_TYPE_TEXT_VIEW,
-                           NULL);
+                           "height-request", cell_area->height);
 
   if (celltext->text) {
     textbuffer = gtk_text_buffer_new (NULL);

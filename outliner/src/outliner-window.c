@@ -278,13 +278,14 @@ key_press_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
   OutlinerWindow *window = data;
   OutlinerWindowPrivate *priv = OUTLINER_WINDOW_GET_PRIVATE (window);
 
-  /* intercept <shift>Tab */
-  if (IS_TAB(event->keyval) && (event->state & GDK_SHIFT_MASK)) {
+  /* intercept <shift>Tab or Left Arrow */
+  if (event->keyval == GDK_Left ||
+     (IS_TAB(event->keyval) && (event->state & GDK_SHIFT_MASK))) {
     outliner_action_unindent(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/UnindentAction"), window);
     return TRUE;
   }
-  /* intercept Tab */
-  else if (IS_TAB(event->keyval)) {
+  /* intercept Tab or Right Arrow */
+  else if (IS_TAB(event->keyval) || event->keyval == GDK_Right) {
     outliner_action_indent(gtk_ui_manager_get_action(priv->merge, "/ui/Outline/IndentAction"), window);
     return TRUE;
   }
